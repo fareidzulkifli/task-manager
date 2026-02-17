@@ -1,66 +1,81 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+'use client';
+
+import { useState, useEffect } from 'react'
+import Link from 'next/link'
 
 export default function Home() {
+  const [projects, setProjects] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchDashboard() {
+      try {
+        const res = await fetch('/api/dashboard')
+        const data = await res.json()
+        if (Array.isArray(data)) {
+          setProjects(data)
+        }
+      } catch (err) {
+        console.error('Failed to fetch dashboard:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchDashboard()
+  }, [])
+
+  if (loading) return <div style={{ padding: '48px', color: 'var(--text-muted)' }}>Loading dashboard...</div>
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.js file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div className="dashboard-container">
+      <header className="dashboard-header">
+        <h1 className="dashboard-title">Dashboard</h1>
+        <p className="dashboard-subtitle">Overview of your most recently active projects</p>
+      </header>
+
+      {projects.length === 0 ? (
+        <div className="card" style={{ textAlign: 'center', padding: '56px 48px' }}>
+          <h2 style={{ marginBottom: '12px', fontSize: '18px' }}>No projects yet</h2>
+          <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>
+            Create your first organization and project to get started.
           </p>
         </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      ) : (
+        <div className="project-grid">
+          {projects.map(project => (
+            <Link
+              key={project.id}
+              href={`/org/${project.org_id}`}
+              className="project-card"
+            >
+              <div>
+                <span className="project-card-org">{project.org_name}</span>
+                <h3 className="project-card-name">{project.name}</h3>
+              </div>
+
+              <p className="project-card-desc">
+                {project.goal || project.description_markdown || 'No description available.'}
+              </p>
+
+              <div className="project-card-footer">
+                <div className="project-stats">
+                  <div className="project-stat">
+                    <div className="project-stat-value">{project.incomplete_tasks}</div>
+                    <div className="project-stat-label">To Do</div>
+                  </div>
+                  <div className="project-stat">
+                    <div className="project-stat-value">{project.total_tasks}</div>
+                    <div className="project-stat-label">Total</div>
+                  </div>
+                </div>
+                <div className="project-card-date">
+                  {new Date(project.last_worked_on).toLocaleDateString()}
+                </div>
+              </div>
+            </Link>
+          ))}
         </div>
-      </main>
+      )}
     </div>
-  );
+  )
 }

@@ -13,12 +13,16 @@ import {
   LogOut, 
   MoreVertical,
   Layers,
-  CheckCircle2
+  CheckCircle2,
+  Sun,
+  Moon,
+  Monitor
 } from 'lucide-react'
 
 export default function Sidebar() {
   const [navData, setNavData] = useState([])
   const [loading, setLoading] = useState(true)
+  const [theme, setTheme] = useState('dark')
   const params = useParams()
   const pathname = usePathname()
   const currentOrgId = params?.id
@@ -35,6 +39,20 @@ export default function Sidebar() {
     } finally {
       setLoading(false)
     }
+  }
+
+  // Initialize theme from localStorage or system preference
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme') || 'dark'
+    setTheme(savedTheme)
+    document.documentElement.setAttribute('data-theme', savedTheme)
+  }, [])
+
+  const toggleTheme = () => {
+    const nextTheme = theme === 'dark' ? 'light' : 'dark'
+    setTheme(nextTheme)
+    localStorage.setItem('theme', nextTheme)
+    document.documentElement.setAttribute('data-theme', nextTheme)
   }
 
   useEffect(() => {
@@ -66,44 +84,55 @@ export default function Sidebar() {
       if (newOrg.error) throw new Error(newOrg.error)
       fetchNav()
     } catch (err) {
-      alert('Error creating organization: ' + err.message)
+      alert('Error: ' + err.message)
     }
   }
 
   if (pathname === '/login') return null
 
   return (
-    <aside className="sidebar">
+    <aside className="sidebar" style={{ background: 'var(--surface)' }}>
       <div className="sidebar-header">
         <Link href="/" className="sidebar-logo">
           <div className="sidebar-logo-icon">
             <Layers size={14} color="#fff" strokeWidth={3} />
           </div>
-          <span className="text-gradient">Task Manager</span>
+          <span style={{ color: 'var(--text)' }}>Task Manager</span>
         </Link>
         
-        <button
-          onClick={handleCreateOrg}
-          className="btn-ghost"
-          style={{ width: '100%', justifyContent: 'flex-start', padding: '8px 12px', fontSize: '13px' }}
-        >
-          <Plus size={16} />
-          <span>New Organization</span>
-        </button>
+        <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
+          <button
+            onClick={handleCreateOrg}
+            className="btn-ghost"
+            style={{ flexGrow: 1, justifyContent: 'flex-start', padding: '8px 12px', fontSize: '11px', fontWeight: '700', fontFamily: 'monospace' }}
+          >
+            <Plus size={14} />
+            <span>Create ORG</span>
+          </button>
+          
+          <button
+            onClick={toggleTheme}
+            className="btn-ghost"
+            style={{ padding: '8px', borderRadius: '8px', border: '1px solid var(--border-strong)' }}
+            title={theme === 'dark' ? 'Switch to Technical Light' : 'Switch to Industrial Dark'}
+          >
+            {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
+          </button>
+        </div>
       </div>
 
       <nav className="sidebar-nav">
         <div className="nav-section">
-          <Link href="/" className={`sidebar-link ${pathname === '/' ? 'active' : ''}`}>
-            <LayoutDashboard size={18} />
+          <Link href="/" className={`sidebar-link ${pathname === '/' ? 'active' : ''}`} style={{ fontSize: '12px', fontWeight: '700', fontFamily: 'monospace' }}>
+            <LayoutDashboard size={16} />
             <span>Dashboard</span>
           </Link>
         </div>
 
         <div className="nav-section" style={{ marginTop: '24px' }}>
-          <h3 className="nav-section-title">Organizations</h3>
+          <h3 className="nav-section-title" style={{ fontSize: '10px', fontWeight: '800', letterSpacing: '0.15em' }}>WORKSPACE</h3>
           {loading ? (
-            <div style={{ padding: '12px', color: 'var(--text-disabled)', fontSize: '12px' }}>Loading...</div>
+            <div style={{ padding: '12px', color: 'var(--text-disabled)', fontSize: '10px', fontFamily: 'monospace' }}>FETCHING_NODES...</div>
           ) : (
             <div className="sidebar-orgs">
               {navData.map(org => (
@@ -111,24 +140,32 @@ export default function Sidebar() {
                   <Link 
                     href={`/org/${org.id}`} 
                     className={`sidebar-link ${currentOrgId === org.id ? 'active' : ''}`}
-                    style={{ marginTop: '2px' }}
+                    style={{ marginTop: '2px', fontSize: '12px', fontWeight: '700', fontFamily: 'monospace' }}
                   >
-                    <Briefcase size={18} />
-                    <span style={{ flexGrow: 1 }}>{org.name}</span>
-                    {currentOrgId === org.id && <ChevronRight size={14} opacity={0.5} />}
+                    <Briefcase size={16} />
+                    <span style={{ flexGrow: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{org.name.toUpperCase()}</span>
+                    {currentOrgId === org.id && <ChevronRight size={12} opacity={0.5} />}
                   </Link>
                   
                   {currentOrgId === org.id && (
-                    <div className="sidebar-projects">
+                    <div className="sidebar-projects" style={{ borderLeft: '1px solid var(--border-strong)', marginLeft: '20px', paddingLeft: '0' }}>
                       {org.projects.map(project => (
-                        <div key={project.id} className="sidebar-project-item">
-                          <span className="sidebar-project-name" title={project.name} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--text-disabled)' }}></div>
-                            {project.name}
+                        <div key={project.id} className="sidebar-project-item" style={{ paddingLeft: '16px' }}>
+                          <span className="sidebar-project-name" title={project.name} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontFamily: 'monospace' }}>
+                            <div style={{ width: '4px', height: '1px', background: 'var(--text-disabled)' }}></div>
+                            {project.name.toUpperCase()}
                           </span>
                           {project.incomplete_tasks_count > 0 && (
-                            <span className="sidebar-task-count" style={{ background: 'var(--accent-subtle)', color: 'var(--accent)', border: '1px solid var(--accent-muted)', minWidth: '20px', padding: '1px 6px', borderRadius: '10px', fontSize: '10px' }}>
-                              {project.incomplete_tasks_count}
+                            <span style={{ 
+                              background: 'var(--accent-subtle)', 
+                              color: 'var(--accent)', 
+                              fontSize: '9px', 
+                              fontWeight: '900', 
+                              padding: '1px 5px', 
+                              borderRadius: '4px',
+                              border: '1px solid var(--accent-muted)'
+                            }}>
+                              {project.incomplete_tasks_count.toString().padStart(2, '0')}
                             </span>
                           )}
                         </div>
@@ -137,16 +174,13 @@ export default function Sidebar() {
                   )}
                 </div>
               ))}
-              {navData.length === 0 && !loading && (
-                <div style={{ padding: '12px', color: 'var(--text-disabled)', fontSize: '12px' }}>No organizations found.</div>
-              )}
             </div>
           )}
         </div>
       </nav>
 
-      <div style={{ padding: '16px', borderTop: '1px solid var(--border)', marginTop: 'auto' }}>
-        <LogoutButton style={{ width: '100%', background: 'transparent', color: 'var(--text-secondary)', border: '1px solid var(--border)' }} />
+      <div style={{ padding: '16px', borderTop: '1px solid var(--border-strong)', marginTop: 'auto', background: 'var(--background)' }}>
+        <LogoutButton style={{ width: '100%', background: 'transparent', color: 'var(--text-muted)', border: '1px solid var(--border-strong)', fontSize: '11px', fontWeight: '800', fontFamily: 'monospace' }} />
       </div>
     </aside>
   )

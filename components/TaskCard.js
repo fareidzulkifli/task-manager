@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { GripVertical, Check, Clock, AlertCircle } from 'lucide-react'
+import { GripVertical, Check } from 'lucide-react'
 
 export default function TaskCard({ task, onClick, onTaskPatch }) {
   const [localTask, setLocalTask] = useState(task)
@@ -22,8 +22,9 @@ export default function TaskCard({ task, onClick, onTaskPatch }) {
   const style = {
     transform: CSS.Translate.toString(transform),
     transition,
-    opacity: isDragging ? 0.3 : 1,
-    zIndex: isDragging ? 100 : 1,
+    opacity: isDragging ? 0.2 : 1,
+    zIndex: isDragging ? 1000 : 1,
+    cursor: 'pointer'
   }
 
   const isDone = localTask.status === 'Done'
@@ -49,62 +50,146 @@ export default function TaskCard({ task, onClick, onTaskPatch }) {
     patchTask({ status: newStatus })
   }
 
+  const handleToggleFlag = (e, flag) => {
+    e.stopPropagation()
+    const newVal = !localTask[flag]
+    setLocalTask(prev => ({ ...prev, [flag]: newVal }))
+    patchTask({ [flag]: newVal })
+  }
+
   return (
     <div
       ref={setNodeRef}
-      style={style}
       {...attributes}
-      className={`task-card animate-fade-in ${isDone ? 'task-done' : ''}`}
+      className={`task-card ${isDone ? 'task-done' : ''}`}
       onClick={() => onClick(task)}
+      style={{
+        ...style,
+        background: 'var(--surface-alt)',
+        border: '1px solid var(--border-strong)',
+        borderRadius: '10px',
+        padding: '14px 14px 14px 18px',
+        position: 'relative',
+        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '10px',
+        overflow: 'hidden',
+        flexShrink: 0
+      }}
     >
-      <div className="task-card-header">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div
-            {...listeners}
-            className="task-card-grip"
-            onClick={e => e.stopPropagation()}
-            style={{ color: 'var(--text-disabled)', cursor: 'grab' }}
-          >
-            <GripVertical size={14} />
-          </div>
-          <div className="task-meta">
-            {localTask.urgent && <span style={{ color: 'var(--warning)', display: 'flex' }} title="Urgent"><AlertCircle size={12} /></span>}
-            {localTask.important && <span style={{ color: 'var(--accent)', display: 'flex' }} title="Important"><Clock size={12} /></span>}
-          </div>
+      {/* Priority Strip */}
+      <div style={{
+        position: 'absolute',
+        left: 0, top: 0, bottom: 0,
+        width: '3px',
+        background: localTask.urgent && localTask.important ? 'var(--error)'
+                  : localTask.urgent ? 'var(--warning)'
+                  : localTask.important ? 'var(--accent)'
+                  : 'transparent'
+      }} />
+
+      {/* Summary + Drag Handle */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+        <div style={{
+          flex: 1,
+          fontSize: '14px',
+          fontWeight: '600',
+          lineHeight: '1.55',
+          color: isDone ? 'var(--text-disabled)' : 'var(--text)',
+          textDecoration: isDone ? 'line-through' : 'none',
+          display: '-webkit-box',
+          WebkitBoxOrient: 'vertical',
+          WebkitLineClamp: 3,
+          overflow: 'hidden'
+        }}>
+          {localTask.summary}
         </div>
-        
-        <button
-          onClick={handleToggleDone}
-          className={`btn-ghost ${isDone ? 'done' : ''}`}
-          style={{ 
-            padding: '2px', 
-            borderRadius: '50%', 
-            width: '20px', 
-            height: '20px',
-            border: `1px solid ${isDone ? 'var(--success)' : 'var(--border-strong)'}`,
-            background: isDone ? 'var(--success-muted)' : 'transparent',
-            color: isDone ? 'var(--success)' : 'transparent'
+
+        <div
+          {...listeners}
+          onClick={e => e.stopPropagation()}
+          style={{
+            flexShrink: 0,
+            marginTop: '2px',
+            color: 'var(--text-disabled)',
+            cursor: 'grab',
+            display: 'flex',
+            opacity: 0.5
           }}
         >
-          <Check size={12} strokeWidth={3} />
-        </button>
-      </div>
-
-      <div className={`task-summary ${isDone ? 'text-muted' : ''}`} style={{ 
-        textDecoration: isDone ? 'line-through' : 'none',
-        opacity: isDone ? 0.6 : 1
-      }}>
-        {localTask.summary}
-      </div>
-
-      <div className="task-card-footer">
-        <div className="task-meta">
-          {localTask.status !== 'Done' && (
-            <span className="badge" style={{ fontSize: '10px', padding: '1px 6px' }}>
-              {localTask.status}
-            </span>
-          )}
+          <GripVertical size={13} />
         </div>
+      </div>
+
+      {/* Footer */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingTop: '10px',
+        borderTop: '1px solid var(--border)'
+      }}>
+        {/* Priority chips */}
+        <div style={{ display: 'flex', gap: '4px' }}>
+          <button
+            onClick={(e) => handleToggleFlag(e, 'urgent')}
+            title="Toggle Urgency"
+            style={{
+              padding: '3px 8px',
+              fontSize: '9px',
+              fontWeight: '800',
+              letterSpacing: '0.06em',
+              borderRadius: '4px',
+              background: localTask.urgent ? 'var(--warning-muted)' : 'transparent',
+              color: localTask.urgent ? 'var(--warning)' : 'var(--text-disabled)',
+              border: `1px solid ${localTask.urgent ? 'rgba(245, 158, 11, 0.35)' : 'var(--border-strong)'}`,
+              transition: 'all 0.12s'
+            }}
+          >
+            U
+          </button>
+          <button
+            onClick={(e) => handleToggleFlag(e, 'important')}
+            title="Toggle Importance"
+            style={{
+              padding: '3px 8px',
+              fontSize: '9px',
+              fontWeight: '800',
+              letterSpacing: '0.06em',
+              borderRadius: '4px',
+              background: localTask.important ? 'var(--accent-muted)' : 'transparent',
+              color: localTask.important ? 'var(--accent)' : 'var(--text-disabled)',
+              border: `1px solid ${localTask.important ? 'rgba(99, 102, 241, 0.35)' : 'var(--border-strong)'}`,
+              transition: 'all 0.12s'
+            }}
+          >
+            I
+          </button>
+        </div>
+
+        {/* Done toggle */}
+        <button
+          onClick={handleToggleDone}
+          title={isDone ? 'Reactivate' : 'Mark complete'}
+          style={{
+            padding: '3px 10px',
+            borderRadius: '5px',
+            border: `1px solid ${isDone ? 'var(--success)' : 'var(--border-strong)'}`,
+            background: isDone ? 'var(--success-muted)' : 'transparent',
+            color: isDone ? 'var(--success)' : 'var(--text-disabled)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '5px',
+            fontSize: '10px',
+            fontWeight: '700',
+            letterSpacing: '0.04em',
+            transition: 'all 0.15s'
+          }}
+        >
+          <Check size={11} strokeWidth={isDone ? 3 : 1.5} />
+          <span>Done</span>
+        </button>
       </div>
     </div>
   )

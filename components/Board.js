@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import ProjectColumn from './ProjectColumn'
 import TaskModal from './TaskModal'
+import ListView from './ListView'
 import {
   DndContext,
   DragOverlay,
@@ -20,7 +21,30 @@ import {
   horizontalListSortingStrategy,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
-import { Sparkles, Plus, Search, Filter, Loader2, GripVertical, Check, Clock, AlertCircle } from 'lucide-react'
+import { 
+  Sparkles, 
+  Plus, 
+  Search, 
+  Filter, 
+  Loader2, 
+  GripVertical, 
+  Check, 
+  Clock, 
+  AlertCircle,
+  Database,
+  Activity,
+  Maximize2,
+  Cpu,
+  Layers,
+  Terminal,
+  Zap,
+  ArrowRight,
+  Hash,
+  LayoutGrid,
+  List,
+  History,
+  RefreshCcw
+} from 'lucide-react'
 
 // Done tasks sink to the bottom; within each group sort by order_index
 const sortTasks = (taskList) =>
@@ -42,6 +66,8 @@ export default function Board({ orgId }) {
   const [aiSummary, setAiSummary] = useState(null)
   const [aiLoading, setAiLoading] = useState(false)
   const [activeTaskId, setActiveTaskId] = useState(null)
+  const [viewMode, setViewMode] = useState('list')
+  const [completedTasksProject, setCompletedTasksProject] = useState(null)
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -50,7 +76,6 @@ export default function Board({ orgId }) {
     })
   )
 
-  // Updates a single task in local state — no refetch, no loading flash
   const handleTaskPatch = (taskId, updates) => {
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, ...updates } : t))
     window.dispatchEvent(new Event('taskUpdated'))
@@ -68,10 +93,8 @@ export default function Board({ orgId }) {
     setActiveTaskId(null)
 
     if (!over || active.id === over.id) return
-
     const activeId = active.id
 
-    // ── Project column reorder ──────────────────────────────────────────
     if (projects.some(p => p.id === activeId)) {
       setProjects(items => {
         const oldIndex = items.findIndex(i => i.id === activeId)
@@ -83,11 +106,9 @@ export default function Board({ orgId }) {
       return
     }
 
-    // ── Task drag ───────────────────────────────────────────────────────
     const sourceContainerId = active.data.current?.sortable?.containerId
     if (!sourceContainerId) return
 
-    // Resolve destination container (project id)
     let destContainerId
     if (over.data.current?.sortable?.containerId) {
       destContainerId = over.data.current.sortable.containerId
@@ -100,7 +121,6 @@ export default function Board({ orgId }) {
     }
 
     if (sourceContainerId === destContainerId) {
-      // Same column — reorder using the same sorted order as displayed
       const projectTasks = sortTasks(tasks.filter(t => t.project_id === sourceContainerId))
       const oldIndex = projectTasks.findIndex(t => t.id === activeId)
       const newIndex = projectTasks.findIndex(t => t.id === over.id)
@@ -119,10 +139,8 @@ export default function Board({ orgId }) {
         })
       })
     } else {
-      // Cross-column move — update project_id
       const movedTask = tasks.find(t => t.id === activeId)
       if (!movedTask) return
-
       setTasks(prev => prev.map(t =>
         t.id === activeId ? { ...t, project_id: destContainerId } : t
       ))
@@ -200,23 +218,19 @@ export default function Board({ orgId }) {
   const fetchData = async (isInitial = false) => {
     try {
       if (isInitial) setLoading(true)
-
       const [orgRes, projectsRes, tasksRes] = await Promise.all([
         fetch(`/api/orgs/${orgId}`),
         fetch(`/api/projects?org_id=${orgId}`),
         fetch(`/api/tasks?org_id=${orgId}`),
       ])
-
       const [orgData, projectsData, tasksData] = await Promise.all([
         orgRes.json(),
         projectsRes.json(),
         tasksRes.json(),
       ])
-
       if (orgData.error) throw new Error(orgData.error)
       if (projectsData.error) throw new Error(projectsData.error)
       if (tasksData.error) throw new Error(tasksData.error)
-
       setOrg(orgData)
       setProjects(projectsData)
       setTasks(tasksData)
@@ -242,9 +256,8 @@ export default function Board({ orgId }) {
   }
 
   const handleCreateProject = async () => {
-    const name = prompt('Project Name:')
+    const name = prompt('Project ID Name:')
     if (!name) return
-
     try {
       const res = await fetch('/api/projects', {
         method: 'POST',
@@ -260,84 +273,163 @@ export default function Board({ orgId }) {
       setProjects([...projects, newProject])
       window.dispatchEvent(new Event('taskUpdated'))
     } catch (err) {
-      alert('Error creating project: ' + err.message)
+      alert('Error: ' + err.message)
+    }
+  }
+
+  const handleViewCompleted = (project) => {
+    setCompletedTasksProject(project)
+  }
+
+  const handleRestoreTask = async (taskId) => {
+    try {
+      const res = await fetch(`/api/tasks/${taskId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'In Progress' })
+      })
+      const updatedTask = await res.json()
+      if (updatedTask.error) throw new Error(updatedTask.error)
+      
+      setTasks(prev => prev.map(t => t.id === taskId ? updatedTask : t))
+      window.dispatchEvent(new Event('taskUpdated'))
+    } catch (err) {
+      alert('Error restoring task: ' + err.message)
     }
   }
 
   if (loading) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', gap: '12px' }}>
-      <Loader2 className="animate-spin" size={24} color="var(--accent)" />
-      <span style={{ color: 'var(--text-muted)', fontWeight: '500' }}>Initializing board...</span>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', gap: '16px', background: 'var(--background)' }}>
+      <Loader2 className="animate-spin" size={20} color="var(--accent)" />
+      <span style={{ color: 'var(--text-disabled)', fontWeight: '600', fontFamily: 'monospace', fontSize: '12px', letterSpacing: '0.1em' }}>INITIALIZING_CORE_SYSTEM...</span>
     </div>
   )
   
-  if (error) return <div style={{ padding: '40px', color: 'var(--error)' }}>Error: {error}</div>
+  if (error) return <div style={{ padding: '40px', color: 'var(--error)', fontFamily: 'monospace' }}>SYSTEM_ERROR: {error}</div>
 
   return (
-    <div className="board-view">
-      <header className="board-header">
-        <div className="board-title-group">
-          <h1 className="board-title">{org?.name}</h1>
-          <div className="badge" style={{ background: 'var(--accent-subtle)', color: 'var(--accent)', border: '1px solid var(--accent-muted)' }}>
-            {projects.length} Projects
+    <div className="board-view" style={{ background: 'var(--background)' }}>
+      {/* Industrial Header */}
+      <header className="board-header" style={{ 
+        height: '64px', 
+        padding: '0 32px', 
+        background: 'var(--surface)', 
+        borderBottom: '1px solid var(--border-strong)',
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'space-between'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Database size={18} color="var(--accent)" />
+            <h1 style={{ fontSize: '18px', fontWeight: '700', letterSpacing: '-0.04em', color: 'var(--text)' }}>
+              {org?.name?.toUpperCase()}
+            </h1>
           </div>
-          {aiLoading && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)', fontSize: '13px' }}>
-              <Loader2 className="animate-spin" size={14} />
-              AI is working...
+          
+          <div style={{ height: '24px', width: '1px', background: 'var(--border-strong)' }}></div>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: '700', color: 'var(--text-disabled)', fontFamily: 'monospace' }}>
+              <Layers size={14} />
+              <span>PROJECTS: {projects.length.toString().padStart(2, '0')}</span>
             </div>
-          )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: '700', color: 'var(--text-disabled)', fontFamily: 'monospace' }}>
+              <Activity size={14} />
+              <span>Active Tasks: {tasks.filter(t => t.status !== 'Done').length.toString().padStart(3, '0')}</span>
+            </div>
+          </div>
         </div>
-        
+
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-            <Search size={14} style={{ position: 'absolute', left: '12px', color: 'var(--text-disabled)' }} />
+          <div style={{ display: 'flex', border: '1px solid var(--border-strong)', borderRadius: '6px', overflow: 'hidden' }}>
+            <button 
+              onClick={() => setViewMode('kanban')}
+              style={{
+                background: viewMode === 'kanban' ? 'var(--surface-raised)' : 'transparent',
+                color: viewMode === 'kanban' ? 'var(--accent)' : 'var(--text-disabled)',
+                padding: '6px 10px',
+                border: 'none',
+                borderRadius: '0',
+                transition: 'all 0.15s'
+              }}
+              title="Kanban View"
+            >
+              <LayoutGrid size={14} />
+            </button>
+            <div style={{ width: '1px', background: 'var(--border-strong)' }} />
+            <button 
+              onClick={() => setViewMode('list')}
+              style={{
+                background: viewMode === 'list' ? 'var(--surface-raised)' : 'transparent',
+                color: viewMode === 'list' ? 'var(--accent)' : 'var(--text-disabled)',
+                padding: '6px 10px',
+                border: 'none',
+                borderRadius: '0',
+                transition: 'all 0.15s'
+              }}
+              title="List View"
+            >
+              <List size={14} />
+            </button>
+          </div>
+
+          <div style={{ width: '1px', height: '24px', background: 'var(--border-strong)' }} />
+
+          <div style={{ position: 'relative' }}>
+            <Search size={14} style={{ position: 'absolute', left: '12px', top: '11px', color: 'var(--text-disabled)' }} />
             <input 
               type="text" 
-              placeholder="Quick search..." 
-              style={{ width: '200px', paddingLeft: '32px', fontSize: '13px', background: 'var(--background)', height: '36px' }}
+              placeholder="SEARCH" 
+              style={{ width: '240px', paddingLeft: '36px', height: '36px', background: 'var(--background)', fontSize: '11px', fontFamily: 'monospace', fontWeight: '600' }}
             />
           </div>
           
           <button 
             onClick={handleSummarizeOrg} 
             className="btn-ghost"
-            style={{ height: '36px', padding: '0 16px' }}
+            style={{ height: '36px', border: '1px solid var(--border-strong)', background: 'var(--background)', padding: '0 16px', fontSize: '11px', fontWeight: '700' }}
           >
-            <Sparkles size={16} color="var(--accent)" />
-            <span>AI Overview</span>
+            <Zap size={14} color="var(--accent)" />
+            AI Synthesis
           </button>
           
           <button 
             onClick={handleCreateProject}
             className="btn-primary"
-            style={{ height: '36px', padding: '0 16px' }}
+            style={{ height: '36px', padding: '0 16px', fontSize: '11px', fontWeight: '700' }}
           >
-            <Plus size={16} />
-            <span>New Project</span>
+            <Plus size={14} />
+            Add Project
           </button>
         </div>
       </header>
 
+      {/* AI Intelligence Overlay */}
       {aiSummary && (
-        <div className="modal-overlay">
-          <div className="modal-content" style={{ maxWidth: '800px' }}>
-            <div className="modal-header">
-              <h2 className="modal-title" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <Sparkles size={20} color="var(--accent)" />
-                {aiSummary.type === 'org' ? 'Organization Overview' : `Project Summary: ${aiSummary.projectName}`}
-              </h2>
-              <button onClick={() => setAiSummary(null)} className="btn-ghost" style={{ padding: '8px' }}>Close</button>
+        <div className="modal-overlay" style={{ backdropFilter: 'blur(12px)', background: 'rgba(0,0,0,0.8)' }}>
+          <div className="modal-content" style={{ maxWidth: '900px', border: '1px solid var(--accent-muted)', padding: '0', overflow: 'hidden' }}>
+            <div style={{ padding: '16px 24px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--surface)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <Cpu size={20} color="var(--accent)" />
+                <h2 style={{ fontSize: '13px', fontWeight: '800', fontFamily: 'monospace', letterSpacing: '0.1em' }}>
+                  {aiSummary.type === 'org' ? 'SYSTEM_OVERVIEW_SYNTHESIS' : `PROJECT_ANALYSIS: ${aiSummary.projectName.toUpperCase()}`}
+                </h2>
+              </div>
+              <button onClick={() => setAiSummary(null)} className="btn-ghost" style={{ padding: '6px' }}>
+                <X size={18} />
+              </button>
             </div>
-            <div className="modal-body">
+            <div style={{ padding: '32px', background: 'var(--background)' }}>
               <div style={{ 
                 lineHeight: '1.8', 
-                background: 'var(--background)', 
-                padding: '32px', 
-                borderRadius: 'var(--radius-lg)', 
-                border: '1px solid var(--border)',
+                background: 'rgba(0,0,0,0.3)', 
+                padding: '40px', 
+                borderRadius: '8px', 
+                border: '1px solid var(--border-strong)',
                 fontSize: '15px',
-                color: 'var(--text-secondary)'
+                color: 'var(--text-secondary)',
+                fontFamily: 'Inter, sans-serif'
               }}>
                 <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit' }}>{aiSummary.content}</pre>
               </div>
@@ -346,21 +438,36 @@ export default function Board({ orgId }) {
         </div>
       )}
 
-      <div className="kanban-board">
+      {/* Main Board Area */}
+      {viewMode === 'list' ? (
+        <ListView 
+          projects={projects} 
+          tasks={tasks} 
+          onTaskClick={openTaskModal}
+          onTaskPatch={handleTaskPatch}
+          onViewCompleted={handleViewCompleted}
+        />
+      ) : (
+      <div className="kanban-board" style={{ padding: '32px', gap: '32px', overflowY: 'hidden', height: 'calc(100vh - 64px)' }}>
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
+          measuring={{
+            droppable: {
+              strategy: 0, // Rect
+            },
+          }}
         >
           <SortableContext
             items={projects.map(p => p.id)}
             strategy={horizontalListSortingStrategy}
           >
             {projects.map(project => {
-              const projectTasks = sortTasks(tasks.filter(t => t.project_id === project.id))
+              const projectTasks = sortTasks(tasks.filter(t => t.project_id === project.id && t.status !== 'Done'))
               return (
-                <div key={project.id} style={{ display: 'flex', flexDirection: 'column' }}>
+                <div key={project.id} style={{ display: 'flex', flexDirection: 'column', height: '100%', minWidth: '340px' }}>
                   <SortableContext
                     id={project.id}
                     items={projectTasks.map(t => t.id)}
@@ -372,83 +479,162 @@ export default function Board({ orgId }) {
                       onTaskClick={openTaskModal}
                       onTasksUpdated={() => fetchData(false)}
                       onTaskPatch={handleTaskPatch}
+                      onViewCompleted={handleViewCompleted}
                     />
                   </SortableContext>
                   <button
                     onClick={() => handleSummarizeProject(project)}
                     className="btn-ghost"
                     style={{ 
-                      marginTop: '12px', 
-                      fontSize: '12px', 
-                      padding: '8px 12px', 
+                      marginTop: '16px', 
+                      fontSize: '10px', 
+                      fontWeight: '800',
+                      letterSpacing: '0.1em',
+                      padding: '12px', 
                       width: '100%', 
-                      justifyContent: 'center',
-                      borderStyle: 'dashed',
-                      opacity: 0.8
+                      border: '1px dashed var(--border-strong)',
+                      color: 'var(--text-disabled)'
                     }}
                   >
-                    <Sparkles size={14} color="var(--accent)" />
-                    <span>Summarize Project</span>
+                    <Zap size={12} color="var(--accent)" style={{ marginRight: '8px' }} />
+                    Summarize Project
                   </button>
                 </div>
               )
             })}
           </SortableContext>
 
-          <DragOverlay dropAnimation={{
-            sideEffects: defaultDropAnimationSideEffects({
-              styles: {
-                active: {
-                  opacity: '0.5',
+          <DragOverlay 
+            dropAnimation={{
+              duration: 200,
+              easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
+              sideEffects: defaultDropAnimationSideEffects({
+                styles: {
+                  active: {
+                    opacity: '0.4',
+                  },
                 },
-              },
-            }),
-          }}>
+              }),
+            }}
+          >
             {(() => {
               if (!activeTaskId) return null
               const t = tasks.find(t => t.id === activeTaskId)
               if (!t) return null
-              const isDone = t.status === 'Done'
               return (
-                <div className="task-card" style={{ 
-                  boxShadow: 'var(--shadow-xl)', 
-                  cursor: 'grabbing', 
-                  width: '320px',
-                  background: 'var(--surface-raised)',
-                  borderColor: 'var(--accent)',
-                  transform: 'scale(1.05)',
-                  transition: 'transform 0.1s ease'
+                <div style={{ 
+                  padding: '24px', 
+                  background: 'var(--surface-raised)', 
+                  border: '2px solid var(--accent)', 
+                  borderRadius: '12px',
+                  width: '340px',
+                  boxShadow: '0 40px 80px rgba(0,0,0,0.9), 0 0 32px rgba(167, 139, 250, 0.18)',
+                  transform: 'rotate(2.5deg) scale(1.03)',
+                  cursor: 'grabbing',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '14px'
                 }}>
-                  <div className="task-card-header">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <GripVertical size={14} style={{ color: 'var(--accent)' }} />
-                      <div className="task-meta">
-                        {t.urgent && <span style={{ color: 'var(--warning)' }}><AlertCircle size={12} /></span>}
-                        {t.important && <span style={{ color: 'var(--accent)' }}><Clock size={12} /></span>}
-                      </div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent)', fontFamily: 'monospace', fontSize: '10px', fontWeight: '800', letterSpacing: '0.1em' }}>
+                      <Hash size={12} />
+                      <span>RELOCATING_RESOURCE: {t.id.slice(0,8).toUpperCase()}</span>
                     </div>
-                    <button
-                      className={`btn-ghost ${isDone ? 'done' : ''}`}
-                      style={{ 
-                        padding: '2px', 
-                        borderRadius: '50%', 
-                        width: '20px', 
-                        height: '20px',
-                        border: `1px solid ${isDone ? 'var(--success)' : 'var(--border-strong)'}`,
-                        background: isDone ? 'var(--success-muted)' : 'transparent',
-                        color: isDone ? 'var(--success)' : 'transparent'
-                      }}
-                    >
-                      <Check size={12} strokeWidth={3} />
-                    </button>
+                    <div style={{ background: 'var(--accent)', color: 'white', padding: '2px 8px', borderRadius: '4px', fontSize: '9px', fontWeight: '900' }}>
+                      IN_FLIGHT
+                    </div>
                   </div>
-                  <div className="task-summary">{t.summary}</div>
+                  <div style={{ color: 'var(--text)', fontWeight: '700', fontSize: '15px', lineHeight: '1.4' }}>{t.summary}</div>
+                  <div style={{ height: '1px', background: 'var(--border-strong)', opacity: 0.3 }}></div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ fontSize: '9px', fontWeight: '800', color: 'var(--text-disabled)', fontFamily: 'monospace' }}>RECALIBRATING_VECTORS...</div>
+                    <GripVertical size={14} color="var(--accent)" />
+                  </div>
                 </div>
               )
             })()}
           </DragOverlay>
         </DndContext>
       </div>
+      )}
+
+      {/* Completed Tasks Modal */}
+      {completedTasksProject && (
+        <div 
+          className="modal-overlay"
+          onClick={(e) => e.target.classList.contains('modal-overlay') && setCompletedTasksProject(null)}
+        >
+          <div className="modal-content" style={{ width: '600px', maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ 
+              padding: '20px 24px', 
+              borderBottom: '1px solid var(--border)', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'space-between',
+              background: 'var(--surface-alt)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <History size={18} color="var(--text-muted)" />
+                <h3 style={{ fontSize: '14px', fontWeight: '700', letterSpacing: '-0.02em' }}>
+                  COMPLETED ARCHIVE: {completedTasksProject.name.toUpperCase()}
+                </h3>
+              </div>
+              <button onClick={() => setCompletedTasksProject(null)} className="btn-ghost" style={{ padding: '6px' }}>
+                <X size={16} />
+              </button>
+            </div>
+            
+            <div style={{ overflowY: 'auto', padding: '24px', flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {tasks
+                .filter(t => t.project_id === completedTasksProject.id && t.status === 'Done')
+                .sort((a, b) => {
+                  const dateA = a.completed_at || a.updated_at || a.created_at
+                  const dateB = b.completed_at || b.updated_at || b.created_at
+                  return new Date(dateB) - new Date(dateA)
+                })
+                .map(task => (
+                  <div key={task.id} style={{ 
+                    padding: '12px 16px', 
+                    background: 'var(--surface)', 
+                    border: '1px solid var(--border-strong)',
+                    borderRadius: '8px',
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'space-between',
+                    opacity: 0.7
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <Check size={16} color="var(--success)" />
+                      <div>
+                        <div style={{ fontSize: '13px', fontWeight: '500', color: 'var(--text-disabled)', textDecoration: 'line-through' }}>{task.summary}</div>
+                        <div style={{ fontSize: '10px', color: 'var(--text-disabled)', fontFamily: 'var(--font-mono)', marginTop: '2px' }}>
+                          {(() => {
+                            const d = new Date(task.completed_at || task.created_at)
+                            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+                          })()}
+                        </div>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => handleRestoreTask(task.id)}
+                      className="btn-ghost"
+                      style={{ padding: '6px 12px', fontSize: '11px', gap: '6px', color: 'var(--accent)' }}
+                    >
+                      <RefreshCcw size={12} />
+                      Restore
+                    </button>
+                  </div>
+                ))
+              }
+              {tasks.filter(t => t.project_id === completedTasksProject.id && t.status === 'Done').length === 0 && (
+                <div style={{ textAlign: 'center', color: 'var(--text-disabled)', fontSize: '12px', padding: '32px' }}>
+                  No completed tasks found in archive.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {isTaskModalOpen && (
         <TaskModal
@@ -460,5 +646,14 @@ export default function Board({ orgId }) {
         />
       )}
     </div>
+  )
+}
+
+function X({ size }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="18" y1="6" x2="6" y2="18"></line>
+      <line x1="6" y1="6" x2="18" y2="18"></line>
+    </svg>
   )
 }

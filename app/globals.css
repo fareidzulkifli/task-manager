@@ -2,44 +2,50 @@
 
 /* =====================================================================
    PREMIUM DESIGN TOKENS
-   Inspired by linear/vercel/modern SaaS aesthetics
+   "Void Violet" — Deep Space Dark / Crystal Light
+   A distinct identity: midnight navy-black surfaces, amethyst precision.
    ===================================================================== */
 :root {
-  /* Surfaces — zinc-based, layered carefully */
-  --background:    #09090b; /* Zinc-950 */
-  --surface:       #18181b; /* Zinc-900 */
-  --surface-alt:   #27272a; /* Zinc-800 */
-  --surface-raised:#3f3f46; /* Zinc-700 */
-  
-  /* Accent — Indigo-Blue hybrid */
-  --accent:        #6366f1;
-  --accent-hover:  #818cf8;
-  --accent-muted:  rgba(99, 102, 241, 0.15);
-  --accent-subtle: rgba(99, 102, 241, 0.08);
+  /* Surfaces — deep midnight navy-black, cold and spatial */
+  --background:    #05050F; /* near-pure black, faint navy */
+  --surface:       #0C0C1E; /* midnight — cards, panels */
+  --surface-alt:   #141432; /* elevated — task cards, nested */
+  --surface-raised:#1E1E4A; /* prominent — interactive highlights */
 
-  /* Text — sophisticated contrast */
-  --text:          #fafafa; /* Zinc-50 */
-  --text-secondary:#d4d4d8; /* Zinc-300 */
-  --text-muted:    #a1a1aa; /* Zinc-400 */
-  --text-disabled: #52525b; /* Zinc-600 */
+  /* Accent — Violet-400, amethyst prestige */
+  --accent:        #A78BFA;
+  --accent-hover:  #C4B5FD;
+  --accent-muted:  rgba(167, 139, 250, 0.15);
+  --accent-subtle: rgba(167, 139, 250, 0.08);
 
-  /* Borders — thin and sharp */
-  --border:        #27272a; /* Zinc-800 */
-  --border-strong: #3f3f46; /* Zinc-700 */
+  /* Text — cool near-white with violet sub-tone */
+  --text:          #EDEDFF;
+  --text-secondary:#BCBCDC;
+  --text-muted:    #7070A0;
+  --text-disabled: #3A3A60;
+
+  /* Borders — dark violet-tinted dividers */
+  --border:        #1A1A38;
+  --border-strong: #262658;
 
   /* Semantic */
-  --error:         #ef4444;
-  --error-muted:   rgba(239, 68, 68, 0.1);
-  --success:       #10b981;
-  --success-muted: rgba(16, 185, 129, 0.1);
-  --warning:       #f59e0b;
-  --warning-muted: rgba(245, 158, 11, 0.1);
+  --error:         #F87171;
+  --error-muted:   rgba(248, 113, 113, 0.12);
+  --success:       #34D399;
+  --success-muted: rgba(52, 211, 153, 0.12);
+  --warning:       #FBBF24;
+  --warning-muted: rgba(251, 191, 36, 0.12);
 
-  /* Shadows — multi-layered for realism */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
-  --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+  /* Shadows — deep black with subtle violet luminance on xl */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.55);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.65), 0 1px 4px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 10px 28px rgba(0, 0, 0, 0.75), 0 4px 10px rgba(0, 0, 0, 0.55);
+  --shadow-xl: 0 24px 64px rgba(0, 0, 0, 0.88), 0 0 60px rgba(167, 139, 250, 0.07);
+
+  /* Industrial Tokens */
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --border-technical: 1px solid var(--border-strong);
+  --header-height: 64px;
 
   /* Radii — refined and consistent */
   --radius-sm: 4px;
@@ -48,10 +54,93 @@
   --radius-xl: 16px;
   --radius-full: 9999px;
 
-  /* Glassmorphism */
-  --glass-bg: rgba(24, 24, 27, 0.75);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --glass-blur: blur(12px);
+  /* Glassmorphism — violet-tinted dark glass */
+  --glass-bg:     rgba(12, 12, 30, 0.88);
+  --glass-border: rgba(167, 139, 250, 0.14);
+  --glass-blur:   blur(12px);
+}
+
+/* =====================================================================
+   CRYSTAL LIGHT THEME
+   "Pearl + Violet Precision"
+   Barely-tinted pearl white — crisp, intentional, unmistakably premium.
+   Cool violet undertone ties to the dark theme's DNA across both modes.
+   ===================================================================== */
+[data-theme='light'] {
+  /* Surfaces — crystal pearl with a whisper of violet */
+  --background:    #F6F6FF; /* barely-violet white */
+  --surface:       #FFFFFF; /* pure white cards */
+  --surface-alt:   #EDEDFA; /* delicate violet-tinted panels */
+  --surface-raised:#E4E4F5; /* interactive / hover states */
+
+  /* Accent — Violet-600, strong presence on light backgrounds */
+  --accent:        #7C3AED;
+  --accent-hover:  #6D28D9;
+  --accent-muted:  rgba(124, 58, 237, 0.10);
+  --accent-subtle: rgba(124, 58, 237, 0.06);
+
+  /* Text — deep navy-violet, not warm-brown */
+  --text:          #0A0A20;
+  --text-secondary:#2A2A52;
+  --text-muted:    #65659A;
+  --text-disabled: #AEAED0;
+
+  /* Borders — violet-tinted cool neutrals */
+  --border:        #E0E0F5;
+  --border-strong: #C6C6E8;
+
+  /* Semantic */
+  --error:         #DC2626;
+  --error-muted:   rgba(220, 38, 38, 0.08);
+  --success:       #059669;
+  --success-muted: rgba(5, 150, 105, 0.08);
+  --warning:       #D97706;
+  --warning-muted: rgba(217, 119, 6, 0.08);
+
+  /* Shadows — clean violet-navy tinted depth */
+  --shadow-sm: 0 1px 3px rgba(10, 10, 32, 0.07);
+  --shadow-md: 0 4px 12px rgba(10, 10, 32, 0.08), 0 1px 4px rgba(10, 10, 32, 0.05);
+  --shadow-lg: 0 12px 32px rgba(10, 10, 32, 0.10), 0 4px 10px rgba(10, 10, 32, 0.06);
+  --shadow-xl: 0 24px 64px rgba(10, 10, 32, 0.12), 0 8px 20px rgba(10, 10, 32, 0.07);
+
+  /* Glass */
+  --glass-bg:     rgba(255, 255, 255, 0.92);
+  --glass-border: rgba(10, 10, 32, 0.08);
+}
+
+/* =====================================================================
+   LIGHT THEME COMPONENT OVERRIDES
+   Fixes for hardcoded values that CSS variables alone cannot address
+   ===================================================================== */
+
+/* Board gradient — pearl top, delicate violet-tinted base */
+[data-theme='light'] .kanban-board {
+  background: linear-gradient(to bottom, #F6F6FF 0%, #EDEDFA 100%);
+}
+
+/* Modal overlay — deep violet-navy, not warm-brown */
+[data-theme='light'] .modal-overlay {
+  background: rgba(10, 10, 32, 0.52);
+  backdrop-filter: blur(8px);
+}
+
+/* Task cards — precise violet-tinted depth on pearl background */
+[data-theme='light'] .task-card {
+  box-shadow: 0 1px 3px rgba(10, 10, 32, 0.07), 0 1px 2px rgba(10, 10, 32, 0.04);
+}
+
+[data-theme='light'] .task-card:hover {
+  box-shadow: 0 8px 24px rgba(10, 10, 32, 0.09), 0 2px 6px rgba(10, 10, 32, 0.06);
+}
+
+/* Kanban columns — precise elevation off the pearl board */
+[data-theme='light'] .kanban-column {
+  box-shadow: 0 2px 12px rgba(10, 10, 32, 0.07), 0 1px 3px rgba(10, 10, 32, 0.04);
+}
+
+/* Primary button glow — violet-based on light surfaces */
+[data-theme='light'] .btn-primary:hover:not(:disabled) {
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.28);
 }
 
 /* =====================================================================
@@ -135,7 +224,7 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
 }
 .btn-primary:hover:not(:disabled) {
   background: var(--accent-hover);
-  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 4px 14px rgba(167, 139, 250, 0.35);
 }
 
 /* =====================================================================
@@ -221,7 +310,7 @@ input::placeholder, textarea::placeholder { color: var(--text-disabled); }
 .sidebar-logo-icon {
   width: 24px;
   height: 24px;
-  background: linear-gradient(135deg, var(--accent) 0%, #818cf8 100%);
+  background: linear-gradient(135deg, #7C3AED 0%, #C4B5FD 100%);
   border-radius: 6px;
   display: flex;
   align-items: center;
@@ -325,8 +414,8 @@ input::placeholder, textarea::placeholder { color: var(--text-disabled); }
   gap: 20px;
   padding: 24px 32px;
   overflow-x: auto;
-  align-items: flex-start;
-  background: linear-gradient(to bottom, var(--background) 0%, #0c0c0e 100%);
+  align-items: stretch;
+  background: linear-gradient(to bottom, var(--background) 0%, #03030C 100%);
 }
 
 .kanban-column {
@@ -371,7 +460,7 @@ input::placeholder, textarea::placeholder { color: var(--text-disabled); }
   flex-direction: column;
   gap: 12px;
   overflow-y: auto;
-  min-height: 100px;
+  min-height: 0;
 }
 
 /* =====================================================================
@@ -518,4 +607,13 @@ input::placeholder, textarea::placeholder { color: var(--text-disabled); }
 @keyframes fade-in {
   from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }

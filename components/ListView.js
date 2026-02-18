@@ -9,6 +9,7 @@ import {
   Circle, 
   AlertCircle, 
   MoreHorizontal, 
+  MoreVertical, // Added
   Maximize2,
   Clock,
   FileText,
@@ -17,7 +18,9 @@ import {
   X,
   Loader2,
   ArrowRight,
-  History
+  History,
+  Edit, // Added
+  Trash2 // Added
 } from 'lucide-react'
 
 export default function ListView({ projects, tasks, onTaskClick, onTaskPatch, onViewCompleted }) {
@@ -40,7 +43,7 @@ export default function ListView({ projects, tasks, onTaskClick, onTaskPatch, on
       gap: '24px'
     }}>
       {/* Global List Header */}
-      <div style={{
+      <div className="list-view-header" style={{
         display: 'grid',
         gridTemplateColumns: '48px minmax(300px, 2fr) 120px 140px 80px',
         padding: '0 16px',
@@ -99,7 +102,9 @@ export default function ListView({ projects, tasks, onTaskClick, onTaskPatch, on
 
 function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewCompleted }) {
   const [isExpanded, setIsExpanded] = useState(true)
+  const [expandedTaskId, setExpandedTaskId] = useState(null)
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [showMenu, setShowMenu] = useState(false)
   const [newTaskSummary, setNewTaskSummary] = useState('')
   const [newTaskUrgent, setNewTaskUrgent] = useState(false)
   const [newTaskImportant, setNewTaskImportant] = useState(false)
@@ -111,6 +116,35 @@ function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewComplete
     setNewTaskUrgent(false)
     setNewTaskImportant(false)
     setShowCreateModal(true)
+  }
+  
+  const handleEditProject = async () => {
+    const newName = prompt('Enter new project name:', project.name)
+    if (!newName || newName === project.name) return
+    try {
+      await fetch(`/api/projects/${project.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newName })
+      })
+      window.dispatchEvent(new Event('taskUpdated'))
+    } catch (err) {
+      alert('Error updating project: ' + err.message)
+    } finally {
+      setShowMenu(false)
+    }
+  }
+
+  const handleDeleteProject = async () => {
+    if (!confirm('Are you sure you want to delete this project? All tasks will be deleted.')) return
+    try {
+      await fetch(`/api/projects/${project.id}`, { method: 'DELETE' })
+      window.dispatchEvent(new Event('taskUpdated'))
+    } catch (err) {
+      alert('Error deleting project: ' + err.message)
+    } finally {
+      setShowMenu(false)
+    }
   }
 
   const handleCreateTask = async () => {
@@ -147,7 +181,7 @@ function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewComplete
 
   return (
     <>
-      <div style={{
+      <div className="project-group-container" style={{
         background: 'var(--surface)',
         border: '1px solid var(--border)',
         borderRadius: '12px',
@@ -191,7 +225,7 @@ function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewComplete
             {project.name}
           </div>
 
-          <div style={{
+          <div className="mobile-task-count" style={{
             fontSize: '10px',
             fontWeight: '600',
             color: 'var(--text-disabled)',
@@ -207,51 +241,129 @@ function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewComplete
           
           {/* Right Side Actions */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            {/* View Completed Button */}
-            <button
-              onClick={(e) => { e.stopPropagation(); onViewCompleted(); }}
-              className="btn-ghost"
-              style={{
-                padding: '4px 8px',
-                height: '24px',
-                fontSize: '10px',
-                border: '1px solid var(--border-strong)',
-                borderRadius: '6px',
-                color: 'var(--text-disabled)'
-              }}
-              title="View Completed Tasks"
-            >
-              <History size={12} />
-              <span style={{ fontWeight: '700' }}>HISTORY</span>
-            </button>
-
-            {/* Add Task Button */}
+            {/* Mobile Add Task Button */}
             <button
               onClick={handleOpenCreate}
-              className="btn-ghost"
+              className="mobile-add-btn"
               style={{ 
-                padding: '4px 8px', 
-                height: '24px', 
-                fontSize: '10px',
-                border: '1px solid var(--border-strong)',
-                borderRadius: '6px'
+                display: 'none', 
+                padding: '6px', 
+                borderRadius: '6px',
+                background: 'var(--surface-raised)',
+                border: '1px solid var(--accent)',
+                color: 'var(--accent)' 
               }}
             >
-              <Plus size={12} />
-              <span style={{ fontWeight: '700' }}>ADD TASK</span>
+              <Plus size={14} />
             </button>
+
+            {/* Desktop Actions */}
+            <div className="desktop-project-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button
+                onClick={(e) => { e.stopPropagation(); onViewCompleted(); }}
+                className="btn-ghost"
+                style={{
+                  padding: '4px 8px',
+                  height: '24px',
+                  fontSize: '10px',
+                  border: '1px solid var(--border-strong)',
+                  borderRadius: '6px',
+                  color: 'var(--text-disabled)'
+                }}
+                title="View Completed Tasks"
+              >
+                <History size={12} />
+                <span style={{ fontWeight: '700' }}>HISTORY</span>
+              </button>
+
+              <button
+                onClick={handleOpenCreate}
+                className="btn-ghost"
+                style={{ 
+                  padding: '4px 8px', 
+                  height: '24px', 
+                  fontSize: '10px',
+                  border: '1px solid var(--border-strong)',
+                  borderRadius: '6px'
+                }}
+              >
+                <Plus size={12} />
+                <span style={{ fontWeight: '700' }}>ADD TASK</span>
+              </button>
+            </div>
+
+            {/* Mobile Menu */}
+            <div className="mobile-project-menu" style={{ position: 'relative' }}>
+              <button
+                onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }}
+                className="btn-ghost"
+                style={{ padding: '4px', height: 'auto', color: 'var(--text-muted)' }}
+              >
+                <MoreVertical size={16} />
+              </button>
+              
+              {showMenu && (
+                <>
+                  <div 
+                    style={{ position: 'fixed', inset: 0, zIndex: 90 }} 
+                    onClick={(e) => { e.stopPropagation(); setShowMenu(false); }} 
+                  />
+                  <div style={{
+                    position: 'absolute',
+                    top: '100%',
+                    right: 0,
+                    marginTop: '8px',
+                    width: '180px',
+                    background: 'var(--surface)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '8px',
+                    boxShadow: 'var(--shadow-lg)',
+                    zIndex: 100,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    padding: '4px'
+                  }}>
+                    {/* Add Task moved out */}
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); onViewCompleted(); setShowMenu(false); }}
+                      className="btn-ghost"
+                      style={{ justifyContent: 'flex-start', padding: '8px 12px', fontSize: '12px' }}
+                    >
+                      <History size={14} /> History
+                    </button>
+                    <div style={{ height: '1px', background: 'var(--border)', margin: '4px 0' }} />
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); handleEditProject(); }}
+                      className="btn-ghost"
+                      style={{ justifyContent: 'flex-start', padding: '8px 12px', fontSize: '12px' }}
+                    >
+                      <Edit size={14} /> Rename
+                    </button>
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); handleDeleteProject(); }}
+                      className="btn-ghost"
+                      style={{ justifyContent: 'flex-start', padding: '8px 12px', fontSize: '12px', color: 'var(--error)' }}
+                    >
+                      <Trash2 size={14} /> Delete
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Task Rows */}
         {isExpanded && (
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', maxHeight: '600px', overflowY: 'auto' }}>
             {tasks.map(task => (
               <TaskRow 
                 key={task.id} 
                 task={task} 
                 onTaskClick={onTaskClick}
                 onTaskPatch={onTaskPatch}
+                isExpanded={expandedTaskId === task.id}
+                onToggleExpand={() => setExpandedTaskId(prev => prev === task.id ? null : task.id)}
               />
             ))}
             {tasks.length === 0 && (
@@ -276,7 +388,7 @@ function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewComplete
           onClick={(e) => e.target.classList.contains('modal-overlay') && setShowCreateModal(false)}
           onKeyDown={(e) => e.key === 'Escape' && setShowCreateModal(false)}
         >
-          <div style={{
+          <div className="modal-content" style={{
             background: 'var(--surface)',
             borderRadius: 'var(--radius-xl)',
             boxShadow: 'var(--shadow-xl)',
@@ -492,8 +604,7 @@ function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewComplete
   )
 }
 
-function TaskRow({ task, onTaskClick, onTaskPatch }) {
-  const [isRowExpanded, setIsRowExpanded] = useState(false)
+function TaskRow({ task, onTaskClick, onTaskPatch, isExpanded, onToggleExpand }) {
   const isDone = task.status === 'Done'
 
   const patchTask = async (updates) => {
@@ -529,13 +640,35 @@ function TaskRow({ task, onTaskClick, onTaskPatch }) {
     patchTask({ [flag]: newVal })
   }
 
+  const priorityColor = task.urgent && task.important ? 'var(--error)'
+                      : task.urgent ? 'var(--warning)'
+                      : task.important ? 'var(--accent)'
+                      : 'transparent'
+
   return (
-    <div style={{
+    <div className="task-row-container" style={{
       display: 'flex',
       flexDirection: 'column',
-      borderBottom: '1px solid var(--border-subtle)',
-      background: isRowExpanded ? 'var(--surface-raised)' : 'transparent',
-      transition: 'background 0.15s ease'
+      transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+      position: 'relative',
+      
+      // Prominent Focus Styles
+      zIndex: isExpanded ? 10 : 1,
+      background: isExpanded ? 'var(--surface-raised)' : 'transparent',
+      
+      // Borders & Shape
+      borderTop: isExpanded ? '1px solid var(--accent-muted)' : '1px solid transparent',
+      borderRight: isExpanded ? '1px solid var(--accent-muted)' : '1px solid transparent',
+      borderBottom: isExpanded ? '1px solid var(--accent-muted)' : '1px solid var(--border-subtle)',
+      borderLeft: isExpanded 
+        ? `4px solid ${priorityColor !== 'transparent' ? priorityColor : 'var(--accent)'}` 
+        : `4px solid ${priorityColor}`,
+      borderRadius: isExpanded ? '8px' : '0',
+      
+      // Spacing & Lift
+      margin: isExpanded ? '16px 0' : '0',
+      boxShadow: isExpanded ? '0 12px 24px -8px rgba(0, 0, 0, 0.4), 0 4px 8px -4px rgba(0, 0, 0, 0.2)' : 'none',
+      transform: isExpanded ? 'scale(1.01)' : 'scale(1)'
     }}>
       {/* Main Row Content */}
       <div 
@@ -547,8 +680,8 @@ function TaskRow({ task, onTaskClick, onTaskPatch }) {
           minHeight: '48px',
           cursor: 'pointer'
         }}
-        className="task-row"
-        onClick={() => setIsRowExpanded(!isRowExpanded)}
+        className="task-row-grid"
+        onClick={onToggleExpand}
       >
         {/* Status */}
         <div style={{ display: 'flex', justifyContent: 'center' }}>
@@ -656,7 +789,7 @@ function TaskRow({ task, onTaskClick, onTaskPatch }) {
       </div>
 
       {/* Expanded Details Row */}
-      {isRowExpanded && (
+      {isExpanded && (
         <div style={{
           padding: '0 16px 16px 64px', // indented to align with text
           display: 'flex',

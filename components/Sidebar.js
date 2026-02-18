@@ -23,6 +23,7 @@ export default function Sidebar() {
   const [navData, setNavData] = useState([])
   const [loading, setLoading] = useState(true)
   const [theme, setTheme] = useState('dark')
+  const [isMobileOpen, setIsMobileOpen] = useState(false)
   const params = useParams()
   const pathname = usePathname()
   const currentOrgId = params?.id
@@ -54,6 +55,17 @@ export default function Sidebar() {
     localStorage.setItem('theme', nextTheme)
     document.documentElement.setAttribute('data-theme', nextTheme)
   }
+
+  useEffect(() => {
+    const handleToggle = () => setIsMobileOpen(prev => !prev)
+    window.addEventListener('toggle-sidebar', handleToggle)
+    return () => window.removeEventListener('toggle-sidebar', handleToggle)
+  }, [])
+
+  useEffect(() => {
+    // Close sidebar on route change (mobile)
+    setIsMobileOpen(false)
+  }, [pathname, currentOrgId])
 
   useEffect(() => {
     if (pathname === '/login') return
@@ -91,16 +103,32 @@ export default function Sidebar() {
   if (pathname === '/login') return null
 
   return (
-    <aside className="sidebar" style={{ background: 'var(--surface)' }}>
-      <div className="sidebar-header">
-        <Link href="/" className="sidebar-logo">
-          <div className="sidebar-logo-icon">
-            <Layers size={14} color="#fff" strokeWidth={3} />
+    <>
+      {/* Mobile Overlay Backdrop */}
+      <div 
+        className={`sidebar-backdrop ${isMobileOpen ? 'open' : ''}`}
+        onClick={() => setIsMobileOpen(false)}
+      />
+      
+      <aside className={`sidebar ${isMobileOpen ? 'mobile-open' : ''}`} style={{ background: 'var(--surface)' }}>
+        <div className="sidebar-header">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Link href="/" className="sidebar-logo">
+              <div className="sidebar-logo-icon">
+                <Layers size={14} color="#fff" strokeWidth={3} />
+              </div>
+              <span style={{ color: 'var(--text)' }}>Task Manager</span>
+            </Link>
+            <button 
+              className="btn-ghost mobile-close-btn"
+              onClick={() => setIsMobileOpen(false)}
+              style={{ padding: '4px' }}
+            >
+              <ChevronRight size={18} style={{ transform: 'rotate(180deg)' }} />
+            </button>
           </div>
-          <span style={{ color: 'var(--text)' }}>Task Manager</span>
-        </Link>
-        
-        <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
+          
+          <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
           <button
             onClick={handleCreateOrg}
             className="btn-ghost"
@@ -183,5 +211,6 @@ export default function Sidebar() {
         <LogoutButton style={{ width: '100%', background: 'transparent', color: 'var(--text-muted)', border: '1px solid var(--border-strong)', fontSize: '11px', fontWeight: '800', fontFamily: 'monospace' }} />
       </div>
     </aside>
+    </>
   )
 }

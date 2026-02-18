@@ -43,7 +43,8 @@ import {
   LayoutGrid,
   List,
   History,
-  RefreshCcw
+  RefreshCcw,
+  Menu // Added Menu icon
 } from 'lucide-react'
 
 // Done tasks sink to the bottom; within each group sort by order_index
@@ -68,6 +69,10 @@ export default function Board({ orgId }) {
   const [activeTaskId, setActiveTaskId] = useState(null)
   const [viewMode, setViewMode] = useState('list')
   const [completedTasksProject, setCompletedTasksProject] = useState(null)
+  
+  // New Project Modal State
+  const [isProjectModalOpen, setIsProjectModalOpen] = useState(false)
+  const [newProjectName, setNewProjectName] = useState('')
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -79,6 +84,10 @@ export default function Board({ orgId }) {
   const handleTaskPatch = (taskId, updates) => {
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, ...updates } : t))
     window.dispatchEvent(new Event('taskUpdated'))
+  }
+  
+  const handleToggleSidebar = () => {
+    window.dispatchEvent(new Event('toggle-sidebar'))
   }
 
   const handleDragStart = (event) => {
@@ -243,7 +252,26 @@ export default function Board({ orgId }) {
 
   useEffect(() => {
     if (orgId) fetchData(true)
+
+    const handleTaskUpdateEvent = () => {
+      fetchData(false)
+    }
+    
+    window.addEventListener('taskUpdated', handleTaskUpdateEvent)
+    return () => window.removeEventListener('taskUpdated', handleTaskUpdateEvent)
   }, [orgId])
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth <= 768) {
+        setViewMode('list')
+      }
+    }
+    // Check on mount
+    handleResize()
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   const openTaskModal = (task) => {
     setSelectedTask(task)
@@ -255,15 +283,19 @@ export default function Board({ orgId }) {
     setSelectedTask(null)
   }
 
-  const handleCreateProject = async () => {
-    const name = prompt('Project ID Name:')
-    if (!name) return
+  const handleCreateProject = () => {
+    setNewProjectName('')
+    setIsProjectModalOpen(true)
+  }
+
+  const handleConfirmCreateProject = async () => {
+    if (!newProjectName.trim()) return
     try {
       const res = await fetch('/api/projects', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name,
+          name: newProjectName.trim(),
           org_id: orgId,
           order_index: projects.length
         })
@@ -272,6 +304,7 @@ export default function Board({ orgId }) {
       if (newProject.error) throw new Error(newProject.error)
       setProjects([...projects, newProject])
       window.dispatchEvent(new Event('taskUpdated'))
+      setIsProjectModalOpen(false)
     } catch (err) {
       alert('Error: ' + err.message)
     }
@@ -319,17 +352,25 @@ export default function Board({ orgId }) {
         alignItems: 'center', 
         justifyContent: 'space-between'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Database size={18} color="var(--accent)" />
-            <h1 style={{ fontSize: '18px', fontWeight: '700', letterSpacing: '-0.04em', color: 'var(--text)' }}>
+        <div className="board-header-left" style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+          <button 
+            className="mobile-menu-btn btn-ghost" 
+            onClick={handleToggleSidebar}
+            style={{ display: 'none', padding: '8px' }}
+          >
+            <Menu size={20} />
+          </button>
+
+          <div className="board-title-group" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Database size={18} color="var(--accent)" className="desktop-only-icon" />
+            <h1 className="board-title" style={{ fontSize: '18px', fontWeight: '700', letterSpacing: '-0.04em', color: 'var(--text)' }}>
               {org?.name?.toUpperCase()}
             </h1>
           </div>
           
-          <div style={{ height: '24px', width: '1px', background: 'var(--border-strong)' }}></div>
+          <div className="header-divider" style={{ height: '24px', width: '1px', background: 'var(--border-strong)' }}></div>
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div className="board-stats" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: '700', color: 'var(--text-disabled)', fontFamily: 'monospace' }}>
               <Layers size={14} />
               <span>PROJECTS: {projects.length.toString().padStart(2, '0')}</span>
@@ -341,8 +382,8 @@ export default function Board({ orgId }) {
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <div style={{ display: 'flex', border: '1px solid var(--border-strong)', borderRadius: '6px', overflow: 'hidden' }}>
+        <div className="board-header-right" style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <div className="view-toggle" style={{ display: 'flex', border: '1px solid var(--border-strong)', borderRadius: '6px', overflow: 'hidden' }}>
             <button 
               onClick={() => setViewMode('kanban')}
               style={{
@@ -467,7 +508,7 @@ export default function Board({ orgId }) {
             {projects.map(project => {
               const projectTasks = sortTasks(tasks.filter(t => t.project_id === project.id && t.status !== 'Done'))
               return (
-                <div key={project.id} style={{ display: 'flex', flexDirection: 'column', height: '100%', minWidth: '340px' }}>
+                <div key={project.id} style={{ display: 'flex', flexDirection: 'column', height: 'auto', maxHeight: '100%', minWidth: '340px' }}>
                   <SortableContext
                     id={project.id}
                     items={projectTasks.map(t => t.id)}
@@ -631,6 +672,94 @@ export default function Board({ orgId }) {
                   No completed tasks found in archive.
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create Project Modal */}
+      {isProjectModalOpen && (
+        <div
+          className="modal-overlay"
+          onClick={(e) => e.target.classList.contains('modal-overlay') && setIsProjectModalOpen(false)}
+          onKeyDown={(e) => e.key === 'Escape' && setIsProjectModalOpen(false)}
+        >
+          <div className="modal-content" style={{ maxWidth: '480px', padding: '0', overflow: 'hidden' }}>
+            <div style={{
+              padding: '20px 24px',
+              borderBottom: '1px solid var(--border)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              background: 'var(--surface-alt)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{
+                  width: '32px', height: '32px', borderRadius: '8px',
+                  background: 'var(--accent-muted)', border: '1px solid var(--accent-subtle)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}>
+                  <Layers size={16} color="var(--accent)" />
+                </div>
+                <h3 style={{ fontSize: '14px', fontWeight: '700', letterSpacing: '-0.02em', color: 'var(--text)' }}>
+                  INITIATE NEW PROJECT
+                </h3>
+              </div>
+              <button onClick={() => setIsProjectModalOpen(false)} className="btn-ghost" style={{ padding: '6px' }}>
+                <X size={16} />
+              </button>
+            </div>
+            
+            <div style={{ padding: '32px 24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div>
+                <label style={{
+                  display: 'block', fontSize: '10px', fontWeight: '800',
+                  color: 'var(--text-disabled)', textTransform: 'uppercase',
+                  letterSpacing: '0.15em', marginBottom: '10px'
+                }}>
+                  Project Designation
+                </label>
+                <input
+                  autoFocus
+                  value={newProjectName}
+                  onChange={(e) => setNewProjectName(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleConfirmCreateProject()}
+                  placeholder="e.g. Q1_MARKETING_SPRINT"
+                  style={{
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    fontFamily: 'var(--font-mono)',
+                    padding: '12px 16px',
+                    background: 'var(--background)',
+                    border: '1px solid var(--border-strong)',
+                    width: '100%'
+                  }}
+                />
+                <div style={{ fontSize: '11px', color: 'var(--text-disabled)', marginTop: '8px', lineHeight: '1.4' }}>
+                  Assign a unique identifier for this project stream. This will serve as the primary container for all related tasks and assets.
+                </div>
+              </div>
+            </div>
+
+            <div style={{
+              padding: '20px 24px',
+              borderTop: '1px solid var(--border)',
+              display: 'flex',
+              justifyContent: 'flex-end',
+              gap: '12px',
+              background: 'var(--surface-alt)'
+            }}>
+              <button onClick={() => setIsProjectModalOpen(false)} className="btn-ghost" style={{ fontSize: '12px' }}>
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmCreateProject}
+                disabled={!newProjectName.trim()}
+                className="btn-primary"
+                style={{ fontSize: '12px', padding: '8px 20px' }}
+              >
+                Create Project
+              </button>
             </div>
           </div>
         </div>

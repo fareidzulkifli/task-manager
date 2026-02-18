@@ -234,6 +234,7 @@ export default function ProjectColumn({ project, tasks, onTaskClick, onTasksUpda
             padding: '16px',
             flexGrow: 1,
             overflowY: 'auto',
+            maxHeight: '1250px', // Limit to approx 10 cards
             display: 'flex',
             flexDirection: 'column',
             gap: '16px',

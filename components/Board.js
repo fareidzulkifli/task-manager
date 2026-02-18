@@ -11,6 +11,7 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  defaultDropAnimationSideEffects,
 } from '@dnd-kit/core'
 import {
   arrayMove,
@@ -19,6 +20,7 @@ import {
   horizontalListSortingStrategy,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
+import { Sparkles, Plus, Search, Filter, Loader2, GripVertical, Check, Clock, AlertCircle } from 'lucide-react'
 
 // Done tasks sink to the bottom; within each group sort by order_index
 const sortTasks = (taskList) =>
@@ -195,8 +197,6 @@ export default function Board({ orgId }) {
     }
   }
 
-  // isInitial=true: shows loading spinner (first mount only)
-  // isInitial=false: silent background refresh — board stays visible
   const fetchData = async (isInitial = false) => {
     try {
       if (isInitial) setLoading(true)
@@ -264,35 +264,83 @@ export default function Board({ orgId }) {
     }
   }
 
-  if (loading) return <div style={{ padding: '40px' }}>Loading board...</div>
+  if (loading) return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', gap: '12px' }}>
+      <Loader2 className="animate-spin" size={24} color="var(--accent)" />
+      <span style={{ color: 'var(--text-muted)', fontWeight: '500' }}>Initializing board...</span>
+    </div>
+  )
+  
   if (error) return <div style={{ padding: '40px', color: 'var(--error)' }}>Error: {error}</div>
 
   return (
     <div className="board-view">
       <header className="board-header">
-        <div>
-          <h1 style={{ fontSize: '22px', letterSpacing: '-0.03em' }}>{org?.name}</h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginTop: '2px' }}>
-            {aiLoading ? 'AI is thinking...' : 'Kanban Board'}
-          </p>
+        <div className="board-title-group">
+          <h1 className="board-title">{org?.name}</h1>
+          <div className="badge" style={{ background: 'var(--accent-subtle)', color: 'var(--accent)', border: '1px solid var(--accent-muted)' }}>
+            {projects.length} Projects
+          </div>
+          {aiLoading && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)', fontSize: '13px' }}>
+              <Loader2 className="animate-spin" size={14} />
+              AI is working...
+            </div>
+          )}
         </div>
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-          <button onClick={handleSummarizeOrg} className="btn-ghost">Org Summary</button>
-          <button onClick={handleCreateProject}>+ New Project</button>
+        
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+            <Search size={14} style={{ position: 'absolute', left: '12px', color: 'var(--text-disabled)' }} />
+            <input 
+              type="text" 
+              placeholder="Quick search..." 
+              style={{ width: '200px', paddingLeft: '32px', fontSize: '13px', background: 'var(--background)', height: '36px' }}
+            />
+          </div>
+          
+          <button 
+            onClick={handleSummarizeOrg} 
+            className="btn-ghost"
+            style={{ height: '36px', padding: '0 16px' }}
+          >
+            <Sparkles size={16} color="var(--accent)" />
+            <span>AI Overview</span>
+          </button>
+          
+          <button 
+            onClick={handleCreateProject}
+            className="btn-primary"
+            style={{ height: '36px', padding: '0 16px' }}
+          >
+            <Plus size={16} />
+            <span>New Project</span>
+          </button>
         </div>
       </header>
 
       {aiSummary && (
         <div className="modal-overlay">
-          <div className="modal-content" style={{ maxWidth: '760px' }}>
-            <h2 style={{ fontSize: '18px', marginBottom: '20px' }}>
-              {aiSummary.type === 'org' ? 'Organization Overview' : `Project Summary: ${aiSummary.projectName}`}
-            </h2>
-            <div style={{ lineHeight: '1.7', background: 'var(--surface-alt)', padding: '20px 24px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
-              <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', fontSize: '14px', color: 'var(--text-secondary)' }}>{aiSummary.content}</pre>
+          <div className="modal-content" style={{ maxWidth: '800px' }}>
+            <div className="modal-header">
+              <h2 className="modal-title" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Sparkles size={20} color="var(--accent)" />
+                {aiSummary.type === 'org' ? 'Organization Overview' : `Project Summary: ${aiSummary.projectName}`}
+              </h2>
+              <button onClick={() => setAiSummary(null)} className="btn-ghost" style={{ padding: '8px' }}>Close</button>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
-              <button onClick={() => setAiSummary(null)} className="btn-ghost">Close</button>
+            <div className="modal-body">
+              <div style={{ 
+                lineHeight: '1.8', 
+                background: 'var(--background)', 
+                padding: '32px', 
+                borderRadius: 'var(--radius-lg)', 
+                border: '1px solid var(--border)',
+                fontSize: '15px',
+                color: 'var(--text-secondary)'
+              }}>
+                <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit' }}>{aiSummary.content}</pre>
+              </div>
             </div>
           </div>
         </div>
@@ -329,42 +377,72 @@ export default function Board({ orgId }) {
                   <button
                     onClick={() => handleSummarizeProject(project)}
                     className="btn-ghost"
-                    style={{ margin: '10px 0', fontSize: '11px', padding: '5px 10px' }}
+                    style={{ 
+                      marginTop: '12px', 
+                      fontSize: '12px', 
+                      padding: '8px 12px', 
+                      width: '100%', 
+                      justifyContent: 'center',
+                      borderStyle: 'dashed',
+                      opacity: 0.8
+                    }}
                   >
-                    Summarize Project
+                    <Sparkles size={14} color="var(--accent)" />
+                    <span>Summarize Project</span>
                   </button>
                 </div>
               )
             })}
           </SortableContext>
 
-          {/* Floating ghost card while dragging */}
-          <DragOverlay dropAnimation={null}>
+          <DragOverlay dropAnimation={{
+            sideEffects: defaultDropAnimationSideEffects({
+              styles: {
+                active: {
+                  opacity: '0.5',
+                },
+              },
+            }),
+          }}>
             {(() => {
               if (!activeTaskId) return null
               const t = tasks.find(t => t.id === activeTaskId)
               if (!t) return null
-              const cls = t.urgent && t.important ? 'priority-urgent-important'
-                : t.urgent ? 'priority-urgent'
-                : t.important ? 'priority-important'
-                : 'priority-none'
-              const label = t.urgent && t.important ? 'Urgent & Important'
-                : t.urgent ? 'Urgent'
-                : t.important ? 'Important'
-                : 'Neither'
+              const isDone = t.status === 'Done'
               return (
-                <div className={`task-card ${cls}`} style={{ boxShadow: 'var(--shadow-lg)', opacity: 0.92, cursor: 'grabbing', width: '288px' }}>
+                <div className="task-card" style={{ 
+                  boxShadow: 'var(--shadow-xl)', 
+                  cursor: 'grabbing', 
+                  width: '320px',
+                  background: 'var(--surface-raised)',
+                  borderColor: 'var(--accent)',
+                  transform: 'scale(1.05)',
+                  transition: 'transform 0.1s ease'
+                }}>
                   <div className="task-card-header">
-                    <div className="task-card-grip" style={{ color: 'var(--text-muted)' }}>
-                      <svg width="10" height="12" viewBox="0 0 10 12" fill="currentColor">
-                        <circle cx="2" cy="2" r="1.4"/><circle cx="8" cy="2" r="1.4"/>
-                        <circle cx="2" cy="6" r="1.4"/><circle cx="8" cy="6" r="1.4"/>
-                        <circle cx="2" cy="10" r="1.4"/><circle cx="8" cy="10" r="1.4"/>
-                      </svg>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <GripVertical size={14} style={{ color: 'var(--accent)' }} />
+                      <div className="task-meta">
+                        {t.urgent && <span style={{ color: 'var(--warning)' }}><AlertCircle size={12} /></span>}
+                        {t.important && <span style={{ color: 'var(--accent)' }}><Clock size={12} /></span>}
+                      </div>
                     </div>
-                    <div className={`task-priority-tag ${cls}`}>{label}</div>
+                    <button
+                      className={`btn-ghost ${isDone ? 'done' : ''}`}
+                      style={{ 
+                        padding: '2px', 
+                        borderRadius: '50%', 
+                        width: '20px', 
+                        height: '20px',
+                        border: `1px solid ${isDone ? 'var(--success)' : 'var(--border-strong)'}`,
+                        background: isDone ? 'var(--success-muted)' : 'transparent',
+                        color: isDone ? 'var(--success)' : 'transparent'
+                      }}
+                    >
+                      <Check size={12} strokeWidth={3} />
+                    </button>
                   </div>
-                  <div style={{ fontSize: '13px', fontWeight: '500', color: 'var(--text)' }}>{t.summary}</div>
+                  <div className="task-summary">{t.summary}</div>
                 </div>
               )
             })()}

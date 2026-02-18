@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { GripVertical, Check, Clock, AlertCircle } from 'lucide-react'
 
 export default function TaskCard({ task, onClick, onTaskPatch }) {
   const [localTask, setLocalTask] = useState(task)
@@ -15,21 +16,16 @@ export default function TaskCard({ task, onClick, onTaskPatch }) {
     setNodeRef,
     transform,
     transition,
+    isDragging
   } = useSortable({ id: task.id })
 
   const style = {
     transform: CSS.Translate.toString(transform),
     transition,
+    opacity: isDragging ? 0.3 : 1,
+    zIndex: isDragging ? 100 : 1,
   }
 
-  const getPriorityInfo = (t) => {
-    if (t.urgent && t.important) return { label: 'Urgent & Important', class: 'priority-urgent-important' }
-    if (t.urgent) return { label: 'Urgent', class: 'priority-urgent' }
-    if (t.important) return { label: 'Important', class: 'priority-important' }
-    return { label: 'Neither', class: 'priority-none' }
-  }
-
-  const priority = getPriorityInfo(localTask)
   const isDone = localTask.status === 'Done'
 
   const patchTask = async (updates) => {
@@ -40,7 +36,7 @@ export default function TaskCard({ task, onClick, onTaskPatch }) {
     })
     const serverTask = await res.json()
     if (!serverTask.error) {
-      setLocalTask(serverTask)         // reconcile with server (picks up completed_at etc.)
+      setLocalTask(serverTask)
       onTaskPatch?.(task.id, serverTask)
     }
     window.dispatchEvent(new Event('taskUpdated'))
@@ -53,71 +49,62 @@ export default function TaskCard({ task, onClick, onTaskPatch }) {
     patchTask({ status: newStatus })
   }
 
-  const handleToggleFlag = (e, flag) => {
-    e.stopPropagation()
-    const newVal = !localTask[flag]
-    setLocalTask(prev => ({ ...prev, [flag]: newVal }))
-    patchTask({ [flag]: newVal })
-  }
-
   return (
     <div
       ref={setNodeRef}
       style={style}
       {...attributes}
-      className={`task-card ${priority.class}${isDone ? ' task-done' : ''}`}
+      className={`task-card animate-fade-in ${isDone ? 'task-done' : ''}`}
       onClick={() => onClick(task)}
     >
       <div className="task-card-header">
-        <div
-          {...listeners}
-          className="task-card-grip"
-          onClick={e => e.stopPropagation()}
-          title="Drag to move"
-        >
-          <svg width="10" height="12" viewBox="0 0 10 12" fill="currentColor">
-            <circle cx="2" cy="2" r="1.4"/>
-            <circle cx="8" cy="2" r="1.4"/>
-            <circle cx="2" cy="6" r="1.4"/>
-            <circle cx="8" cy="6" r="1.4"/>
-            <circle cx="2" cy="10" r="1.4"/>
-            <circle cx="8" cy="10" r="1.4"/>
-          </svg>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div
+            {...listeners}
+            className="task-card-grip"
+            onClick={e => e.stopPropagation()}
+            style={{ color: 'var(--text-disabled)', cursor: 'grab' }}
+          >
+            <GripVertical size={14} />
+          </div>
+          <div className="task-meta">
+            {localTask.urgent && <span style={{ color: 'var(--warning)', display: 'flex' }} title="Urgent"><AlertCircle size={12} /></span>}
+            {localTask.important && <span style={{ color: 'var(--accent)', display: 'flex' }} title="Important"><Clock size={12} /></span>}
+          </div>
         </div>
-        <div className={`task-priority-tag ${priority.class}`}>{priority.label}</div>
+        
         <button
-          className={`task-done-btn${isDone ? ' done' : ''}`}
           onClick={handleToggleDone}
-          title={isDone ? 'Mark as In Progress' : 'Mark as Done'}
+          className={`btn-ghost ${isDone ? 'done' : ''}`}
+          style={{ 
+            padding: '2px', 
+            borderRadius: '50%', 
+            width: '20px', 
+            height: '20px',
+            border: `1px solid ${isDone ? 'var(--success)' : 'var(--border-strong)'}`,
+            background: isDone ? 'var(--success-muted)' : 'transparent',
+            color: isDone ? 'var(--success)' : 'transparent'
+          }}
         >
-          {isDone && (
-            <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="2,6 5,9 10,3"/>
-            </svg>
-          )}
+          <Check size={12} strokeWidth={3} />
         </button>
       </div>
 
-      <div className="task-summary" style={{ fontSize: '13px', fontWeight: '500', lineHeight: '1.5', color: 'var(--text)' }}>
+      <div className={`task-summary ${isDone ? 'text-muted' : ''}`} style={{ 
+        textDecoration: isDone ? 'line-through' : 'none',
+        opacity: isDone ? 0.6 : 1
+      }}>
         {localTask.summary}
       </div>
 
       <div className="task-card-footer">
-        <div className="task-flags">
-          <button
-            className={`task-flag-btn${localTask.urgent ? ' urgent-active' : ''}`}
-            onClick={e => handleToggleFlag(e, 'urgent')}
-            title="Toggle Urgent"
-          >U</button>
-          <button
-            className={`task-flag-btn${localTask.important ? ' important-active' : ''}`}
-            onClick={e => handleToggleFlag(e, 'important')}
-            title="Toggle Important"
-          >I</button>
+        <div className="task-meta">
+          {localTask.status !== 'Done' && (
+            <span className="badge" style={{ fontSize: '10px', padding: '1px 6px' }}>
+              {localTask.status}
+            </span>
+          )}
         </div>
-        {localTask.status === 'KIV' && (
-          <div className="task-status-badge">KIV</div>
-        )}
       </div>
     </div>
   )

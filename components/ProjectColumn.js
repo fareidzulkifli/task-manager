@@ -5,26 +5,26 @@ import TaskCard from './TaskCard'
 import { useSortable } from '@dnd-kit/sortable'
 import { useDroppable } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
+import { Plus, GripVertical, Settings2, ArrowDownAZ, MoreHorizontal } from 'lucide-react'
 
 export default function ProjectColumn({ project, tasks, onTaskClick, onTasksUpdated, onTaskPatch }) {
   const [loading, setLoading] = useState(false)
 
-  // Makes this column draggable as a whole (horizontal project reorder)
   const {
     attributes,
     listeners,
     setNodeRef: setColumnRef,
     transform,
     transition,
+    isDragging
   } = useSortable({ id: project.id })
 
   const columnStyle = {
     transform: CSS.Translate.toString(transform),
     transition,
+    opacity: isDragging ? 0.5 : 1,
   }
 
-  // Makes the task-list area a drop target so tasks can be dropped into
-  // empty columns (the SortableContext above handles non-empty columns)
   const { setNodeRef: setTasksDropRef } = useDroppable({ id: `col:${project.id}` })
 
   const handleCreateTask = async () => {
@@ -80,52 +80,46 @@ export default function ProjectColumn({ project, tasks, onTaskClick, onTasksUpda
   }
 
   return (
-    <div ref={setColumnRef} style={columnStyle} className="kanban-column">
+    <div ref={setColumnRef} style={columnStyle} className="kanban-column animate-fade-in">
       <div className="kanban-column-header">
-        <div
-          {...attributes}
-          {...listeners}
-          style={{ cursor: 'grab', display: 'flex', alignItems: 'center', color: 'var(--text-muted)', flexShrink: 0 }}
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-          </svg>
+        <div className="kanban-column-title">
+          <div
+            {...attributes}
+            {...listeners}
+            style={{ cursor: 'grab', display: 'flex', alignItems: 'center', color: 'var(--text-disabled)' }}
+          >
+            <GripVertical size={16} />
+          </div>
+          <span>{project.name}</span>
+          <span className="kanban-column-count">{tasks.length}</span>
         </div>
-        <h3 style={{ fontSize: '13px', fontWeight: '600', flexGrow: 1, letterSpacing: '-0.01em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {project.name}
-        </h3>
-        <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexShrink: 0 }}>
-          <a
-            href={`/projects/${project.id}/settings`}
-            style={{ display: 'flex', alignItems: 'center', padding: '5px', background: 'rgba(255,255,255,0.06)', borderRadius: 'var(--radius-sm)', color: 'var(--text-muted)', border: '1px solid var(--border-strong)', transition: 'color 0.15s, background 0.15s' }}
-            title="Project Settings"
-          >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="3"></circle>
-              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-            </svg>
-          </a>
-          <button
+        
+        <div style={{ display: 'flex', gap: '4px' }}>
+          <button 
             onClick={handleSortByPriority}
-            disabled={loading}
-            className="btn-ghost"
-            style={{ padding: '4px 8px', fontSize: '10px' }}
+            className="btn-ghost" 
+            style={{ padding: '6px' }}
+            title="Sort by priority"
           >
-            Sort
+            <ArrowDownAZ size={14} />
           </button>
-          <button
-            onClick={handleCreateTask}
-            disabled={loading}
-            style={{ padding: '4px 10px', fontSize: '16px', lineHeight: 1 }}
+          <a 
+            href={`/projects/${project.id}/settings`}
+            className="btn-ghost"
+            style={{ padding: '6px' }}
           >
-            +
+            <Settings2 size={14} />
+          </a>
+          <button 
+            onClick={handleCreateTask}
+            className="btn-primary" 
+            style={{ padding: '6px', borderRadius: 'var(--radius-sm)' }}
+          >
+            <Plus size={16} />
           </button>
         </div>
       </div>
 
-      {/* ref from useDroppable ensures empty columns are valid drop targets */}
       <div ref={setTasksDropRef} className="kanban-tasks">
         {tasks.map(task => (
           <TaskCard

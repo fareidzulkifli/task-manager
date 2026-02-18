@@ -626,6 +626,11 @@ input::placeholder, textarea::placeholder { color: var(--text-disabled); }
   display: none !important;
 }
 
+/* Delete strip hidden on desktop; shown + animated on mobile via swipe */
+.task-delete-strip {
+  display: none;
+}
+
 @media (max-width: 768px) {
   /* 1. App Shell & Navigation Drawer */
   .app-container {
@@ -772,7 +777,13 @@ input::placeholder, textarea::placeholder { color: var(--text-disabled); }
   .mobile-add-btn { display: flex !important; }
 
   /* Task Rows - Sleek One-Row Feel */
-  .task-row-container { background: var(--background); }
+  .task-delete-strip { display: flex; }
+  .task-row-container {
+    background: var(--background);
+    overflow: hidden;
+    position: relative;
+  }
+  .task-row-sliding-wrapper { background: var(--background); }
 
   .task-row-grid {
     display: flex !important;
@@ -833,8 +844,8 @@ input::placeholder, textarea::placeholder { color: var(--text-disabled); }
   .task-row-grid > div:nth-child(4) { display: none !important; }
   .task-row-grid > div:nth-child(5) { display: none !important; }
 
-  /* Expanded Row */
-  .task-row-container > div:last-child {
+  /* Expanded Row — targets expanded details inside the sliding wrapper */
+  .task-row-sliding-wrapper > div:nth-child(2) {
     background: var(--surface-alt);
     margin-left: 0;
     padding: 16px !important;

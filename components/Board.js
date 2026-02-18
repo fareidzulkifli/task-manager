@@ -47,13 +47,20 @@ import {
   Menu // Added Menu icon
 } from 'lucide-react'
 
-// Done tasks sink to the bottom; within each group sort by order_index
+// Priority score: urgent+important(0) > urgent(1) > important(2) > none(3)
+const priorityScore = (t) => (t.urgent && t.important) ? 0 : t.urgent ? 1 : t.important ? 2 : 3
+
+// Done tasks sink to the bottom; within each group sort by priority, then
+// order_index (preserves drag-and-drop reordering), then created_at as tiebreaker
 const sortTasks = (taskList) =>
   [...taskList].sort((a, b) => {
     const aDone = a.status === 'Done' ? 1 : 0
     const bDone = b.status === 'Done' ? 1 : 0
     if (aDone !== bDone) return aDone - bDone
-    return a.order_index - b.order_index
+    const pDiff = priorityScore(a) - priorityScore(b)
+    if (pDiff !== 0) return pDiff
+    if (a.order_index !== b.order_index) return a.order_index - b.order_index
+    return new Date(a.created_at) - new Date(b.created_at)
   })
 
 export default function Board({ orgId }) {

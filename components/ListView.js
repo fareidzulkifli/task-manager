@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { 
   ChevronRight, 
   ChevronDown, 
@@ -68,9 +68,14 @@ export default function ListView({ projects, tasks, onTaskClick, onTaskPatch, on
       </div>
 
       {projects.map(project => {
-        // Filter out 'Done' tasks for the main view
+        // Filter out 'Done' tasks; sort by priority then creation time
+        const priorityScore = (t) => (t.urgent && t.important) ? 0 : t.urgent ? 1 : t.important ? 2 : 3
         const projectTasks = tasks.filter(t => t.project_id === project.id && t.status !== 'Done')
-          .sort((a, b) => a.order_index - b.order_index)
+          .sort((a, b) => {
+            const pDiff = priorityScore(a) - priorityScore(b)
+            if (pDiff !== 0) return pDiff
+            return new Date(a.created_at) - new Date(b.created_at)
+          })
 
         return (
           <ProjectGroup 
@@ -606,6 +611,12 @@ function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewComplete
 
 function TaskRow({ task, onTaskClick, onTaskPatch, isExpanded, onToggleExpand }) {
   const isDone = task.status === 'Done'
+  const [swipeOffset, setSwipeOffset] = useState(0)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const touchStartRef = useRef(null)
+  const isHorizontalRef = useRef(false)
+  const swipingRef = useRef(false)
 
   const patchTask = async (updates) => {
     try {
@@ -640,192 +651,391 @@ function TaskRow({ task, onTaskClick, onTaskPatch, isExpanded, onToggleExpand })
     patchTask({ [flag]: newVal })
   }
 
+  // --- Swipe-to-delete (mobile only) ---
+  const handleTouchStart = (e) => {
+    if (isExpanded) return
+    touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
+    isHorizontalRef.current = false
+    swipingRef.current = false
+  }
+
+  const handleTouchMove = (e) => {
+    if (!touchStartRef.current || isExpanded) return
+    const dx = e.touches[0].clientX - touchStartRef.current.x
+    const dy = e.touches[0].clientY - touchStartRef.current.y
+    // Determine primary direction on first significant movement
+    if (!swipingRef.current && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) {
+      isHorizontalRef.current = Math.abs(dx) > Math.abs(dy)
+      swipingRef.current = true
+    }
+    if (!isHorizontalRef.current || dx > 0) return
+    setSwipeOffset(Math.max(-80, dx))
+  }
+
+  const handleTouchEnd = () => {
+    if (!touchStartRef.current) return
+    if (swipeOffset < -50) {
+      setSwipeOffset(0)
+      setTimeout(() => setShowDeleteConfirm(true), 150)
+    } else {
+      setSwipeOffset(0)
+    }
+    touchStartRef.current = null
+    isHorizontalRef.current = false
+    swipingRef.current = false
+  }
+
+  const handleDeleteTask = async () => {
+    try {
+      setDeleting(true)
+      await fetch(`/api/tasks/${task.id}`, { method: 'DELETE' })
+      setShowDeleteConfirm(false)
+      window.dispatchEvent(new Event('taskUpdated'))
+    } catch (err) {
+      alert('Failed to delete task')
+      setDeleting(false)
+    }
+  }
+
   const priorityColor = task.urgent && task.important ? 'var(--error)'
                       : task.urgent ? 'var(--warning)'
                       : task.important ? 'var(--accent)'
                       : 'transparent'
 
   return (
-    <div className="task-row-container" style={{
-      display: 'flex',
-      flexDirection: 'column',
-      transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-      position: 'relative',
-      
-      // Prominent Focus Styles
-      zIndex: isExpanded ? 10 : 1,
-      background: isExpanded ? 'var(--surface-raised)' : 'transparent',
-      
-      // Borders & Shape
-      borderTop: isExpanded ? '1px solid var(--accent-muted)' : '1px solid transparent',
-      borderRight: isExpanded ? '1px solid var(--accent-muted)' : '1px solid transparent',
-      borderBottom: isExpanded ? '1px solid var(--accent-muted)' : '1px solid var(--border-subtle)',
-      borderLeft: isExpanded 
-        ? `4px solid ${priorityColor !== 'transparent' ? priorityColor : 'var(--accent)'}` 
-        : `4px solid ${priorityColor}`,
-      borderRadius: isExpanded ? '8px' : '0',
-      
-      // Spacing & Lift
-      margin: isExpanded ? '16px 0' : '0',
-      boxShadow: isExpanded ? '0 12px 24px -8px rgba(0, 0, 0, 0.4), 0 4px 8px -4px rgba(0, 0, 0, 0.2)' : 'none',
-      transform: isExpanded ? 'scale(1.01)' : 'scale(1)'
-    }}>
-      {/* Main Row Content */}
-      <div 
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '48px minmax(300px, 2fr) 120px 140px 80px',
-          alignItems: 'center',
-          padding: '12px 16px',
-          minHeight: '48px',
-          cursor: 'pointer'
-        }}
-        className="task-row-grid"
-        onClick={onToggleExpand}
+    <>
+      <div className="task-row-container" style={{
+        display: 'flex',
+        flexDirection: 'column',
+        transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+        position: 'relative',
+
+        // Prominent Focus Styles
+        zIndex: isExpanded ? 10 : 1,
+        background: isExpanded ? 'var(--surface-raised)' : 'transparent',
+
+        // Borders & Shape
+        borderTop: isExpanded ? '1px solid var(--accent-muted)' : '1px solid transparent',
+        borderRight: isExpanded ? '1px solid var(--accent-muted)' : '1px solid transparent',
+        borderBottom: isExpanded ? '1px solid var(--accent-muted)' : '1px solid var(--border-subtle)',
+        borderLeft: isExpanded
+          ? `4px solid ${priorityColor !== 'transparent' ? priorityColor : 'var(--accent)'}`
+          : `4px solid ${priorityColor}`,
+        borderRadius: isExpanded ? '8px' : '0',
+
+        // Spacing & Lift
+        margin: isExpanded ? '16px 0' : '0',
+        boxShadow: isExpanded ? '0 12px 24px -8px rgba(0, 0, 0, 0.4), 0 4px 8px -4px rgba(0, 0, 0, 0.2)' : 'none',
+        transform: isExpanded ? 'scale(1.01)' : 'scale(1)'
+      }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
       >
-        {/* Status */}
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <button
-            onClick={handleToggleDone}
+        {/* Delete strip — revealed on left-swipe (mobile only, hidden via CSS on desktop) */}
+        <div
+          className="task-delete-strip"
+          style={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            bottom: 0,
+            width: '80px',
+            background: 'var(--error)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexDirection: 'column',
+            gap: '4px',
+            opacity: Math.abs(swipeOffset) > 10 ? Math.abs(swipeOffset) / 80 : 0,
+            transition: swipeOffset === 0 ? 'opacity 0.25s ease' : 'none',
+            zIndex: 0,
+            userSelect: 'none',
+            pointerEvents: 'none'
+          }}
+        >
+          <Trash2 size={20} color="white" />
+          <span style={{ fontSize: '9px', fontWeight: '800', color: 'white', letterSpacing: '0.1em' }}>DELETE</span>
+        </div>
+
+        {/* Sliding content wrapper */}
+        <div
+          className="task-row-sliding-wrapper"
+          style={{
+            transform: `translateX(${swipeOffset}px)`,
+            transition: swipeOffset === 0 ? 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)' : 'none',
+            position: 'relative',
+            zIndex: 1,
+            background: isExpanded ? 'var(--surface-raised)' : undefined
+          }}
+        >
+          {/* Main Row Content */}
+          <div
             style={{
-              background: 'transparent',
-              border: 'none',
-              padding: '4px',
-              color: isDone ? 'var(--success)' : 'var(--text-disabled)',
-              cursor: 'pointer',
+              display: 'grid',
+              gridTemplateColumns: '48px minmax(300px, 2fr) 120px 140px 80px',
+              alignItems: 'center',
+              padding: '12px 16px',
+              minHeight: '48px',
+              cursor: 'pointer'
+            }}
+            className="task-row-grid"
+            onClick={onToggleExpand}
+          >
+            {/* Status */}
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <button
+                onClick={handleToggleDone}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  padding: '4px',
+                  color: isDone ? 'var(--success)' : 'var(--text-disabled)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                {isDone ? <CheckCircle2 size={18} fill="var(--success-muted)" /> : <Circle size={18} />}
+              </button>
+            </div>
+
+            {/* Task Title */}
+            <div style={{
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          >
-            {isDone ? <CheckCircle2 size={18} fill="var(--success-muted)" /> : <Circle size={18} />}
-          </button>
-        </div>
+              gap: '10px',
+              paddingRight: '16px'
+            }}>
+              <span style={{
+                fontSize: '13px',
+                fontWeight: isDone ? '400' : '600',
+                color: isDone ? 'var(--text-disabled)' : 'var(--text)',
+                textDecoration: isDone ? 'line-through' : 'none',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis'
+              }}>
+                {task.summary}
+              </span>
+              {task.notes_markdown && <FileText size={12} color="var(--text-disabled)" />}
+            </div>
 
-        {/* Task Title */}
-        <div style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: '10px',
-          paddingRight: '16px'
-        }}>
-          <span style={{ 
-            fontSize: '13px', 
-            fontWeight: isDone ? '400' : '600', 
-            color: isDone ? 'var(--text-disabled)' : 'var(--text)',
-            textDecoration: isDone ? 'line-through' : 'none',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis'
-          }}>
-            {task.summary}
-          </span>
-          {task.notes_markdown && <FileText size={12} color="var(--text-disabled)" />}
-        </div>
+            {/* Priority */}
+            <div style={{ display: 'flex', gap: '4px' }}>
+              <button
+                onClick={(e) => handleToggleFlag(e, 'urgent')}
+                title="Toggle Urgency"
+                style={{
+                  padding: '3px 8px',
+                  fontSize: '9px',
+                  fontWeight: '800',
+                  letterSpacing: '0.06em',
+                  borderRadius: '4px',
+                  background: task.urgent ? 'var(--warning-muted)' : 'transparent',
+                  color: task.urgent ? 'var(--warning)' : 'var(--text-disabled)',
+                  border: `1px solid ${task.urgent ? 'rgba(245, 158, 11, 0.35)' : 'var(--border-strong)'}`,
+                  transition: 'all 0.12s',
+                  cursor: 'pointer'
+                }}
+              >
+                U
+              </button>
+              <button
+                onClick={(e) => handleToggleFlag(e, 'important')}
+                title="Toggle Importance"
+                style={{
+                  padding: '3px 8px',
+                  fontSize: '9px',
+                  fontWeight: '800',
+                  letterSpacing: '0.06em',
+                  borderRadius: '4px',
+                  background: task.important ? 'var(--accent-muted)' : 'transparent',
+                  color: task.important ? 'var(--accent)' : 'var(--text-disabled)',
+                  border: `1px solid ${task.important ? 'rgba(99, 102, 241, 0.35)' : 'var(--border-strong)'}`,
+                  transition: 'all 0.12s',
+                  cursor: 'pointer'
+                }}
+              >
+                I
+              </button>
+            </div>
 
-        {/* Priority */}
-        <div style={{ display: 'flex', gap: '4px' }}>
-          <button
-            onClick={(e) => handleToggleFlag(e, 'urgent')}
-            title="Toggle Urgency"
-            style={{
-              padding: '3px 8px',
-              fontSize: '9px',
-              fontWeight: '800',
-              letterSpacing: '0.06em',
-              borderRadius: '4px',
-              background: task.urgent ? 'var(--warning-muted)' : 'transparent',
-              color: task.urgent ? 'var(--warning)' : 'var(--text-disabled)',
-              border: `1px solid ${task.urgent ? 'rgba(245, 158, 11, 0.35)' : 'var(--border-strong)'}`,
-              transition: 'all 0.12s',
-              cursor: 'pointer'
-            }}
-          >
-            U
-          </button>
-          <button
-            onClick={(e) => handleToggleFlag(e, 'important')}
-            title="Toggle Importance"
-            style={{
-              padding: '3px 8px',
-              fontSize: '9px',
-              fontWeight: '800',
-              letterSpacing: '0.06em',
-              borderRadius: '4px',
-              background: task.important ? 'var(--accent-muted)' : 'transparent',
-              color: task.important ? 'var(--accent)' : 'var(--text-disabled)',
-              border: `1px solid ${task.important ? 'rgba(99, 102, 241, 0.35)' : 'var(--border-strong)'}`,
-              transition: 'all 0.12s',
-              cursor: 'pointer'
-            }}
-          >
-            I
-          </button>
-        </div>
+            {/* Due Date */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: task.due_date ? 'var(--text-secondary)' : 'var(--text-disabled)' }}>
+              {task.due_date ? (
+                <>
+                  <Calendar size={12} />
+                  <span style={{ fontFamily: 'var(--font-mono)' }}>{task.due_date}</span>
+                </>
+              ) : (
+                <span style={{ opacity: 0.3 }}>—</span>
+              )}
+            </div>
 
-        {/* Due Date */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: task.due_date ? 'var(--text-secondary)' : 'var(--text-disabled)' }}>
-          {task.due_date ? (
-            <>
-              <Calendar size={12} />
-              <span style={{ fontFamily: 'var(--font-mono)' }}>{task.due_date}</span>
-            </>
-          ) : (
-            <span style={{ opacity: 0.3 }}>—</span>
+            {/* Actions */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '4px' }}>
+              <button
+                onClick={(e) => { e.stopPropagation(); onTaskClick(task); }}
+                className="btn-ghost"
+                style={{ padding: '6px', height: 'auto' }}
+                title="Open Details"
+              >
+                <Maximize2 size={14} />
+              </button>
+            </div>
+          </div>
+
+          {/* Expanded Details Row */}
+          {isExpanded && (
+            <div style={{
+              padding: '0 16px 16px 64px', // indented to align with text
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px',
+              cursor: 'default'
+            }}>
+              {/* Notes Snippet */}
+              {task.notes_markdown && (
+                <div style={{
+                  fontSize: '12px',
+                  color: 'var(--text-secondary)',
+                  lineHeight: '1.6',
+                  background: 'var(--background)',
+                  padding: '12px',
+                  borderRadius: '6px',
+                  border: '1px solid var(--border-subtle)',
+                  maxWidth: '80%'
+                }}>
+                  <div style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-disabled)', marginBottom: '4px', textTransform: 'uppercase' }}>Notes Snippet</div>
+                  {task.notes_markdown.slice(0, 300) + (task.notes_markdown.length > 300 ? '...' : '')}
+                </div>
+              )}
+
+              {/* Quick Actions Bar */}
+              <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                <button
+                  onClick={() => onTaskClick(task)}
+                  className="btn-primary"
+                  style={{ fontSize: '11px', padding: '6px 12px', height: '28px' }}
+                >
+                  Full Details
+                </button>
+              </div>
+            </div>
           )}
-        </div>
-
-        {/* Actions */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '4px' }}>
-          <button 
-            onClick={(e) => { e.stopPropagation(); onTaskClick(task); }}
-            className="btn-ghost"
-            style={{ padding: '6px', height: 'auto' }}
-            title="Open Details"
-          >
-            <Maximize2 size={14} />
-          </button>
         </div>
       </div>
 
-      {/* Expanded Details Row */}
-      {isExpanded && (
-        <div style={{
-          padding: '0 16px 16px 64px', // indented to align with text
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '12px',
-          cursor: 'default'
-        }}>
-          {/* Notes Snippet */}
-          {task.notes_markdown && (
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div
+          className="modal-overlay"
+          onClick={(e) => e.target.classList.contains('modal-overlay') && setShowDeleteConfirm(false)}
+          onKeyDown={(e) => e.key === 'Escape' && setShowDeleteConfirm(false)}
+        >
+          <div className="modal-content" style={{
+            maxWidth: '380px',
+            background: 'var(--surface)',
+            borderRadius: 'var(--radius-xl)',
+            overflow: 'hidden',
+            borderRight: '1px solid var(--border-strong)',
+            borderBottom: '1px solid var(--border-strong)',
+            borderLeft: '1px solid var(--border-strong)',
+            borderTop: '2px solid var(--error)'
+          }}>
+            {/* Header */}
             <div style={{
-              fontSize: '12px',
-              color: 'var(--text-secondary)',
-              lineHeight: '1.6',
-              background: 'var(--background)',
-              padding: '12px',
-              borderRadius: '6px',
-              border: '1px solid var(--border-subtle)',
-              maxWidth: '80%'
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '16px 24px',
+              background: 'var(--surface-alt)',
+              borderBottom: '1px solid var(--border)'
             }}>
-              <div style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-disabled)', marginBottom: '4px', textTransform: 'uppercase' }}>Notes Snippet</div>
-              {task.notes_markdown.slice(0, 300) + (task.notes_markdown.length > 300 ? '...' : '')}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: 'var(--radius-sm)',
+                  background: 'var(--error-muted)',
+                  border: '1px solid rgba(248, 113, 113, 0.2)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0
+                }}>
+                  <Trash2 size={14} color="var(--error)" />
+                </div>
+                <div>
+                  <div style={{ fontSize: '13px', fontWeight: '700', letterSpacing: '-0.01em', color: 'var(--text)' }}>Delete Task</div>
+                  <div style={{ fontSize: '10px', color: 'var(--text-disabled)', fontFamily: 'var(--font-mono)', letterSpacing: '0.08em', marginTop: '2px' }}>
+                    IRREVERSIBLE ACTION
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className="btn-ghost"
+                style={{ padding: '6px', borderRadius: 'var(--radius-sm)', flexShrink: 0 }}
+              >
+                <X size={16} />
+              </button>
             </div>
-          )}
 
-          {/* Quick Actions Bar */}
-          <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
-            <button
-              onClick={() => onTaskClick(task)}
-              className="btn-primary"
-              style={{ fontSize: '11px', padding: '6px 12px', height: '28px' }}
-            >
-              Full Details
-            </button>
+            {/* Body */}
+            <div style={{ padding: '20px 24px' }}>
+              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
+                Are you sure you want to permanently delete{' '}
+                <span style={{ fontWeight: '700', color: 'var(--text)' }}>"{task.summary}"</span>?
+              </p>
+              <p style={{ fontSize: '11px', color: 'var(--text-disabled)', marginTop: '8px' }}>
+                This action cannot be undone.
+              </p>
+            </div>
+
+            {/* Footer */}
+            <div style={{
+              padding: '16px 24px',
+              borderTop: '1px solid var(--border)',
+              display: 'flex',
+              justifyContent: 'flex-end',
+              gap: '8px',
+              background: 'var(--surface-alt)'
+            }}>
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className="btn-ghost"
+                style={{ fontSize: '12px', padding: '8px 16px' }}
+                disabled={deleting}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteTask}
+                disabled={deleting}
+                style={{
+                  fontSize: '12px',
+                  padding: '8px 16px',
+                  background: 'var(--error)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: 'var(--radius-md)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  cursor: deleting ? 'not-allowed' : 'pointer',
+                  opacity: deleting ? 0.7 : 1
+                }}
+              >
+                {deleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                Delete
+              </button>
+            </div>
           </div>
         </div>
       )}
-    </div>
+    </>
   )
 }

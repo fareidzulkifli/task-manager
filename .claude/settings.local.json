@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(node -e:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "mcp__6883d08b-6205-4828-9cf6-fa534cd618d4__list_projects",
+      "mcp__6883d08b-6205-4828-9cf6-fa534cd618d4__list_tables"
     ]
   }
 }

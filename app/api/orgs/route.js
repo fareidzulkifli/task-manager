@@ -1,6 +1,14 @@
 import { createServer } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
+function toSlug(name) {
+  return name.toLowerCase().trim()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+}
+
 export async function GET() {
   try {
     const supabase = await createServer()
@@ -29,7 +37,7 @@ export async function POST(req) {
 
     const { data, error } = await supabase
       .from('organizations')
-      .insert([{ name, order_index: order_index || 0 }])
+      .insert([{ name, slug: toSlug(name), order_index: order_index || 0 }])
       .select()
       .single()
 

@@ -4,7 +4,11 @@
       "Bash(node -e:*)",
       "Bash(dir:*)",
       "mcp__6883d08b-6205-4828-9cf6-fa534cd618d4__list_projects",
-      "mcp__6883d08b-6205-4828-9cf6-fa534cd618d4__list_tables"
+      "mcp__6883d08b-6205-4828-9cf6-fa534cd618d4__list_tables",
+      "Bash(ls:*)",
+      "mcp__claude_ai_Supabase__list_projects",
+      "mcp__claude_ai_Supabase__apply_migration",
+      "Bash(cd /c/Users/Hypernix/code-my/personal/task-manager && npm install react-markdown remark-gfm rehype-highlight highlight.js 2>&1)"
     ]
   }
 }

@@ -2,8 +2,9 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { Layers, Loader2, LogIn } from 'lucide-react'
+import { Layers, Loader2, LogIn, BookOpen, AlertCircle } from 'lucide-react'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -34,18 +35,23 @@ export default function LoginPage() {
 
   return (
     <div className="login-page animate-fade-in">
-      <div className="login-card" style={{ maxWidth: '440px', padding: '48px' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '40px' }}>
-          <div className="sidebar-logo-icon" style={{ width: '48px', height: '48px', marginBottom: '24px', borderRadius: '12px' }}>
-            <Layers size={24} color="#fff" />
+      <div className="login-card">
+
+        {/* Branding */}
+        <div className="login-brand">
+          <div className="sidebar-logo-icon" style={{ width: '52px', height: '52px', borderRadius: '14px', marginBottom: '20px' }}>
+            <Layers size={26} color="#fff" />
           </div>
-          <h1 className="login-logo text-gradient" style={{ fontSize: '28px' }}>Task Manager</h1>
-          <p className="login-title" style={{ marginTop: '8px' }}>Sign in to your premium workspace</p>
+          <h1 className="text-gradient" style={{ fontSize: '26px', fontWeight: 700, margin: 0 }}>Task Manager</h1>
+          <p style={{ marginTop: '8px', color: 'var(--text-muted)', fontSize: '13px' }}>
+            Sign in to your personal workspace
+          </p>
         </div>
 
+        {/* Form */}
         <form onSubmit={handleLogin} className="login-form">
-          <div>
-            <label htmlFor="email" className="form-label" style={{ marginBottom: '8px' }}>Email Address</label>
+          <div className="login-field">
+            <label htmlFor="email" className="form-label">Email Address</label>
             <input
               id="email"
               type="email"
@@ -53,14 +59,14 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               required
               autoComplete="email"
-              placeholder="you@company.com"
-              style={{ padding: '12px 16px' }}
+              placeholder="you@example.com"
             />
           </div>
-          <div>
-            <label htmlFor="password" className="form-label" style={{ marginBottom: '8px', display: 'flex', justifyContent: 'space-between' }}>
+
+          <div className="login-field">
+            <label htmlFor="password" className="form-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span>Password</span>
-              <span style={{ color: 'var(--accent)', cursor: 'pointer', fontSize: '10px' }}>Forgot?</span>
+              <span style={{ color: 'var(--accent)', fontSize: '11px', cursor: 'pointer', fontWeight: 500 }}>Forgot?</span>
             </label>
             <input
               id="password"
@@ -70,24 +76,33 @@ export default function LoginPage() {
               required
               autoComplete="current-password"
               placeholder="••••••••"
-              style={{ padding: '12px 16px' }}
             />
           </div>
+
           {error && (
-            <div style={{ display: 'flex', gap: '8px', color: 'var(--error)', fontSize: '13px', background: 'var(--error-muted)', padding: '12px 16px', borderRadius: 'var(--radius-md)', border: '1px solid rgba(239,68,68,0.2)' }}>
-              <div style={{ marginTop: '2px' }}><Layers size={14} /></div>
+            <div className="login-error">
+              <AlertCircle size={14} style={{ flexShrink: 0, marginTop: '1px' }} />
               <span>{error}</span>
             </div>
           )}
-          <button type="submit" disabled={loading} className="btn-primary" style={{ marginTop: '12px', width: '100%', padding: '12px', fontSize: '14px' }}>
-            {loading ? <Loader2 className="animate-spin" size={18} /> : <LogIn size={18} />}
-            {loading ? 'Authenticating...' : 'Sign in to Workspace'}
+
+          <button type="submit" disabled={loading} className="btn-primary login-submit">
+            {loading ? <Loader2 className="animate-spin" size={17} /> : <LogIn size={17} />}
+            {loading ? 'Authenticating...' : 'Sign in'}
           </button>
         </form>
 
-        <p style={{ marginTop: '32px', textAlign: 'center', fontSize: '13px', color: 'var(--text-disabled)' }}>
-          Don't have an account? <span style={{ color: 'var(--text-secondary)', cursor: 'pointer', fontWeight: '500' }}>Contact Admin</span>
-        </p>
+        {/* Divider */}
+        <div className="login-divider">
+          <span>or</span>
+        </div>
+
+        {/* GitNotes shortcut */}
+        <Link href="/gitnote" className="login-gitnote-btn">
+          <BookOpen size={15} />
+          <span>Browse Notes</span>
+        </Link>
+
       </div>
     </div>
   )

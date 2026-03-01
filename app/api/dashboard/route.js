@@ -16,7 +16,8 @@ export async function GET() {
       .select(`
         *,
         organizations (
-          name
+          name,
+          slug
         )
       `)
       .limit(20)
@@ -55,6 +56,7 @@ export async function GET() {
       return {
         ...project,
         org_name: project.organizations?.name || 'Unknown Organization',
+        org_slug: project.organizations?.slug,
         total_tasks: projectTasks.length || 0,
         incomplete_tasks: projectTasks.filter(t => t.status !== 'Done').length || 0,
         last_worked_on: lastWorkedOn.toISOString()

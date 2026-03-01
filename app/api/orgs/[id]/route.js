@@ -1,6 +1,14 @@
 import { createServer } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
+function toSlug(name) {
+  return name.toLowerCase().trim()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+}
+
 export async function GET(req, { params }) {
   try {
     const { id } = await params
@@ -27,7 +35,7 @@ export async function PATCH(req, { params }) {
     const { name, order_index } = body
 
     const updateData = {}
-    if (name !== undefined) updateData.name = name
+    if (name !== undefined) { updateData.name = name; updateData.slug = toSlug(name) }
     if (order_index !== undefined) updateData.order_index = order_index
 
     const { data, error } = await supabase

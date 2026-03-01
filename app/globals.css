@@ -2,45 +2,45 @@
 
 /* =====================================================================
    PREMIUM DESIGN TOKENS
-   "Void Violet" — Deep Space Dark / Crystal Light
-   A distinct identity: midnight navy-black surfaces, amethyst precision.
+   "Notion Minimalist" — Clean, Professional, High-Signal
+   A distinct identity: muted grays, crisp typography, subtle professional accents.
    ===================================================================== */
 :root {
-  /* Surfaces — deep midnight navy-black, cold and spatial */
-  --background:    #05050F; /* near-pure black, faint navy */
-  --surface:       #0C0C1E; /* midnight — cards, panels */
-  --surface-alt:   #141432; /* elevated — task cards, nested */
-  --surface-raised:#1E1E4A; /* prominent — interactive highlights */
+  /* Surfaces — neutral dark grays */
+  --background:    #191919; 
+  --surface:       #202020; 
+  --surface-alt:   #2C2C2C; 
+  --surface-raised:#353535; 
 
-  /* Accent — Violet-400, amethyst prestige */
-  --accent:        #A78BFA;
-  --accent-hover:  #C4B5FD;
-  --accent-muted:  rgba(167, 139, 250, 0.15);
-  --accent-subtle: rgba(167, 139, 250, 0.08);
+  /* Accent — Professional Blue */
+  --accent:        #2EAADC;
+  --accent-hover:  #43B5DF;
+  --accent-muted:  rgba(46, 170, 220, 0.15);
+  --accent-subtle: rgba(46, 170, 220, 0.08);
 
-  /* Text — cool near-white with violet sub-tone */
-  --text:          #EDEDFF;
-  --text-secondary:#BCBCDC;
-  --text-muted:    #7070A0;
-  --text-disabled: #3A3A60;
+  /* Text — Clean grays */
+  --text:          #EAEAEA;
+  --text-secondary:#A5A5A5;
+  --text-muted:    #7A7A7A;
+  --text-disabled: #555555;
 
-  /* Borders — dark violet-tinted dividers */
-  --border:        #1A1A38;
-  --border-strong: #262658;
+  /* Borders — neutral dividers */
+  --border:        #333333;
+  --border-strong: #444444;
 
-  /* Semantic */
-  --error:         #F87171;
-  --error-muted:   rgba(248, 113, 113, 0.12);
-  --success:       #34D399;
-  --success-muted: rgba(52, 211, 153, 0.12);
-  --warning:       #FBBF24;
-  --warning-muted: rgba(251, 191, 36, 0.12);
+  /* Semantic — muted yet clear */
+  --error:         #EB5757;
+  --error-muted:   rgba(235, 87, 87, 0.12);
+  --success:       #5EBB4B;
+  --success-muted: rgba(94, 187, 75, 0.12);
+  --warning:       #D99C3B;
+  --warning-muted: rgba(217, 156, 59, 0.12);
 
-  /* Shadows — deep black with subtle violet luminance on xl */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.55);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.65), 0 1px 4px rgba(0, 0, 0, 0.45);
-  --shadow-lg: 0 10px 28px rgba(0, 0, 0, 0.75), 0 4px 10px rgba(0, 0, 0, 0.55);
-  --shadow-xl: 0 24px 64px rgba(0, 0, 0, 0.88), 0 0 60px rgba(167, 139, 250, 0.07);
+  /* Shadows — soft depth */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3), 0 1px 4px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 10px 24px rgba(0, 0, 0, 0.4), 0 4px 10px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.5);
 
   /* Industrial Tokens */
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
@@ -54,93 +54,72 @@
   --radius-xl: 16px;
   --radius-full: 9999px;
 
-  /* Glassmorphism — violet-tinted dark glass */
-  --glass-bg:     rgba(12, 12, 30, 0.88);
-  --glass-border: rgba(167, 139, 250, 0.14);
-  --glass-blur:   blur(12px);
+  /* Glassmorphism */
+  --glass-bg:     rgba(25, 25, 25, 0.85);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-blur:   blur(16px);
 }
 
 /* =====================================================================
-   CRYSTAL LIGHT THEME
-   "Pearl + Violet Precision"
-   Barely-tinted pearl white — crisp, intentional, unmistakably premium.
-   Cool violet undertone ties to the dark theme's DNA across both modes.
+   LIGHT THEME
+   "True Azure & Sky" — Pure Blue Consumer Aesthetic
+   A distinct, vibrant light blue surface. Absolutely zero green/cyan undertones.
    ===================================================================== */
 [data-theme='light'] {
-  /* Surfaces — crystal pearl with a whisper of violet */
-  --background:    #F6F6FF; /* barely-violet white */
-  --surface:       #FFFFFF; /* pure white cards */
-  --surface-alt:   #EDEDFA; /* delicate violet-tinted panels */
-  --surface-raised:#E4E4F5; /* interactive / hover states */
+  /* Surfaces — Very clear, pure light blue (True Blue) */
+  --background:    #FFFFFF; 
+  --surface:       #E8F0FE; /* A clearer, more present true light blue */
+  --surface-alt:   #DCE8F9; /* Deeper pure blue for elevated panels */
+  --surface-raised:#CDE0F5; /* Interactive states */
 
-  /* Accent — Violet-600, strong presence on light backgrounds */
-  --accent:        #7C3AED;
-  --accent-hover:  #6D28D9;
-  --accent-muted:  rgba(124, 58, 237, 0.10);
-  --accent-subtle: rgba(124, 58, 237, 0.06);
+  /* Accent — Deep Royal/Sapphire Blue */
+  --accent:        #0052CC; /* Pure, strong, non-cyan blue */
+  --accent-hover:  #003DA1;
+  --accent-muted:  rgba(0, 82, 204, 0.12);
+  --accent-subtle: rgba(0, 82, 204, 0.06);
 
-  /* Text — deep navy-violet, not warm-brown */
-  --text:          #0A0A20;
-  --text-secondary:#2A2A52;
-  --text-muted:    #65659A;
-  --text-disabled: #AEAED0;
+  /* Text — Deep Indigo/Navy */
+  --text:          #0F172A; /* Deep indigo */
+  --text-secondary:#334155; /* Slate blue */
+  --text-muted:    #64748B;
+  --text-disabled: #94A3B8;
 
-  /* Borders — violet-tinted cool neutrals */
-  --border:        #E0E0F5;
-  --border-strong: #C6C6E8;
+  /* Borders — Crisp blue-gray */
+  --border:        #C6D8EF;
+  --border-strong: #A8C5E6;
 
-  /* Semantic */
-  --error:         #DC2626;
-  --error-muted:   rgba(220, 38, 38, 0.08);
-  --success:       #059669;
-  --success-muted: rgba(5, 150, 105, 0.08);
-  --warning:       #D97706;
-  --warning-muted: rgba(217, 119, 6, 0.08);
+  /* Semantic — saturated and bright */
+  --error:         #EF4444;
+  --error-muted:   rgba(239, 68, 68, 0.10);
+  --success:       #10B981;
+  --success-muted: rgba(16, 185, 129, 0.10);
+  --warning:       #F59E0B;
+  --warning-muted: rgba(245, 158, 11, 0.10);
 
-  /* Shadows — clean violet-navy tinted depth */
-  --shadow-sm: 0 1px 3px rgba(10, 10, 32, 0.07);
-  --shadow-md: 0 4px 12px rgba(10, 10, 32, 0.08), 0 1px 4px rgba(10, 10, 32, 0.05);
-  --shadow-lg: 0 12px 32px rgba(10, 10, 32, 0.10), 0 4px 10px rgba(10, 10, 32, 0.06);
-  --shadow-xl: 0 24px 64px rgba(10, 10, 32, 0.12), 0 8px 20px rgba(10, 10, 32, 0.07);
+  /* Shadows — tinted deep indigo */
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.07), 0 1px 4px rgba(15, 23, 42, 0.04);
+  --shadow-lg: 0 10px 24px rgba(15, 23, 42, 0.09), 0 4px 10px rgba(15, 23, 42, 0.06);
+  --shadow-xl: 0 20px 40px rgba(15, 23, 42, 0.12);
 
   /* Glass */
-  --glass-bg:     rgba(255, 255, 255, 0.92);
-  --glass-border: rgba(10, 10, 32, 0.08);
+  --glass-bg:     rgba(255, 255, 255, 0.88);
+  --glass-border: rgba(15, 23, 42, 0.06);
 }
 
 /* =====================================================================
    LIGHT THEME COMPONENT OVERRIDES
-   Fixes for hardcoded values that CSS variables alone cannot address
    ===================================================================== */
 
-/* Board gradient — pearl top, delicate violet-tinted base */
-[data-theme='light'] .kanban-board {
-  background: linear-gradient(to bottom, #F6F6FF 0%, #EDEDFA 100%);
-}
-
-/* Modal overlay — deep violet-navy, not warm-brown */
+/* Modal overlay — tinted indigo */
 [data-theme='light'] .modal-overlay {
-  background: rgba(10, 10, 32, 0.52);
+  background: rgba(15, 23, 42, 0.40);
   backdrop-filter: blur(8px);
 }
 
-/* Task cards — precise violet-tinted depth on pearl background */
-[data-theme='light'] .task-card {
-  box-shadow: 0 1px 3px rgba(10, 10, 32, 0.07), 0 1px 2px rgba(10, 10, 32, 0.04);
-}
-
-[data-theme='light'] .task-card:hover {
-  box-shadow: 0 8px 24px rgba(10, 10, 32, 0.09), 0 2px 6px rgba(10, 10, 32, 0.06);
-}
-
-/* Kanban columns — precise elevation off the pearl board */
-[data-theme='light'] .kanban-column {
-  box-shadow: 0 2px 12px rgba(10, 10, 32, 0.07), 0 1px 3px rgba(10, 10, 32, 0.04);
-}
-
-/* Primary button glow — violet-based on light surfaces */
+/* Primary button glow — vibrant sapphire */
 [data-theme='light'] .btn-primary:hover:not(:disabled) {
-  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.28);
+  box-shadow: 0 4px 14px rgba(0, 82, 204, 0.30);
 }
 
 /* =====================================================================
@@ -251,6 +230,124 @@ input:focus, textarea:focus, select:focus {
 input::placeholder, textarea::placeholder { color: var(--text-disabled); }
 
 /* =====================================================================
+   LOGIN PAGE
+   ===================================================================== */
+.login-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100%;
+  padding: 24px;
+  background:
+    radial-gradient(ellipse 60% 50% at 50% -10%, rgba(167, 139, 250, 0.08) 0%, transparent 70%),
+    var(--background);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  padding: 44px 40px 36px;
+}
+
+.login-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 36px;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.login-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+}
+
+.login-error {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  color: var(--error);
+  font-size: 13px;
+  background: var(--error-muted);
+  padding: 11px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(248, 113, 113, 0.2);
+}
+
+.login-submit {
+  width: 100%;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+.login-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 24px 0 0;
+  color: var(--text-disabled);
+  font-size: 11px;
+  font-family: var(--font-mono);
+}
+
+.login-divider::before,
+.login-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.login-gitnote-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 11px;
+  margin-top: 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-decoration: none;
+}
+
+.login-gitnote-btn:hover {
+  border-color: var(--accent-muted);
+  background: var(--accent-subtle);
+  color: var(--accent);
+}
+
+/* =====================================================================
    CARD & LAYOUT
    ===================================================================== */
 .card {
@@ -288,6 +385,13 @@ input::placeholder, textarea::placeholder { color: var(--text-disabled); }
   top: 0;
   width: 260px;
   z-index: 40;
+}
+
+/* Hide sidebar on desktop for full-screen modules like GitNote */
+@media (min-width: 769px) {
+  .sidebar-hidden-desktop {
+    display: none !important;
+  }
 }
 
 .sidebar-header {
@@ -408,128 +512,68 @@ input::placeholder, textarea::placeholder { color: var(--text-disabled); }
   letter-spacing: -0.03em;
 }
 
-.kanban-board {
-  flex-grow: 1;
-  display: flex;
-  gap: 20px;
-  padding: 24px 32px;
-  overflow-x: auto;
-  align-items: stretch;
-  background: linear-gradient(to bottom, var(--background) 0%, #03030C 100%);
-}
-
-.kanban-column {
-  width: 320px;
-  min-width: 320px;
-  display: flex;
-  flex-direction: column;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  max-height: 100%;
-}
-
-.kanban-column-header {
-  padding: 16px 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid var(--border);
-}
-
-.kanban-column-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.kanban-column-count {
-  background: var(--surface-alt);
-  color: var(--text-muted);
-  font-size: 11px;
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-weight: 500;
-}
-
-.kanban-tasks {
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  overflow-y: auto;
-  min-height: 0;
-}
-
 /* =====================================================================
-   TASK CARD
+   LIST VIEW — flat task sheet
    ===================================================================== */
-.task-card {
+
+/* Subtle row hover */
+.task-row-grid:hover {
   background: var(--surface-alt);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-md);
-  padding: 16px;
-  cursor: grab;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  box-shadow: var(--shadow-sm);
 }
 
-.task-card:hover {
-  border-color: var(--text-disabled);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
-.task-card:active {
-  cursor: grabbing;
-}
-
-.task-card-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: 10px;
-}
-
-.task-priority-indicator {
-  width: 8px;
-  height: 8px;
-  border-radius: 2px;
-}
-
-.priority-high { background-color: var(--error); }
-.priority-medium { background-color: var(--warning); }
-.priority-low { background-color: var(--accent); }
-
-.task-summary {
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 1.5;
-  color: var(--text);
-}
-
-.task-card-footer {
-  margin-top: 14px;
-  display: flex;
+/* Pill buttons in project section header (History, Add Task) */
+.lv-pill-btn {
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-}
-
-.task-meta {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  color: var(--text-muted);
+  gap: 5px;
+  padding: 4px 12px;
   font-size: 11px;
+  font-weight: 600;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-strong);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+  white-space: nowrap;
+}
+.lv-pill-btn:hover {
+  background: var(--surface-alt);
+  color: var(--text);
+  border-color: var(--text-disabled);
+}
+.lv-pill-btn-primary {
+  background: var(--accent-muted);
+  color: var(--accent);
+  border-color: rgba(167,139,250,0.3);
+}
+.lv-pill-btn-primary:hover {
+  background: var(--accent-subtle);
+  color: var(--accent-hover);
+  border-color: rgba(167,139,250,0.5);
 }
 
-.task-meta-item {
+/* Inline delete button on task rows (desktop only) */
+.lv-row-delete-btn {
   display: flex;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
+  padding: 6px;
+  height: auto;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-disabled);
+  cursor: pointer;
+  transition: color 0.12s, background 0.12s;
+  opacity: 0;
+}
+.task-row-container:hover .lv-row-delete-btn {
+  opacity: 1;
+}
+.lv-row-delete-btn:hover {
+  color: var(--error);
+  background: var(--error-muted);
 }
 
 /* =====================================================================
@@ -704,7 +748,7 @@ input::placeholder, textarea::placeholder { color: var(--text-disabled); }
   .mobile-menu-btn { display: flex !important; color: var(--text); padding: 0 !important; }
   .desktop-only-icon { display: none !important; }
   .board-title { font-size: 17px !important; font-weight: 600 !important; letter-spacing: -0.02em; color: var(--text) !important; }
-  .board-stats, .header-divider, .view-toggle { display: none !important; }
+  .board-stats, .header-divider { display: none !important; }
   
   .board-header-right {
     display: flex !important;
@@ -728,128 +772,73 @@ input::placeholder, textarea::placeholder { color: var(--text-disabled); }
     padding: 0 !important;
     padding-top: 56px !important;
     height: 100vh !important;
-    background: var(--background);
   }
-  
+
   .list-view-header { display: none !important; }
 
-  /* Project Groups */
-  .project-group-container {
-    border-radius: 0 !important;
-    border: none !important;
-    background: transparent !important;
-    box-shadow: none !important;
-    margin-bottom: 0 !important;
-    overflow: visible !important;
-  }
-  
-  .project-row-header {
-    background: var(--surface) !important;
-    padding: 14px 20px !important;
+  /* Project section headers — Asana-inspired flat, compact */
+  .project-section-header {
+    background: var(--background) !important; /* Match app bg for seamless table integration */
+    padding: 8px 12px !important;
     position: sticky;
     top: 0;
     z-index: 40;
     border-bottom: 1px solid var(--border-strong) !important;
-    border-left: 4px solid var(--accent) !important;
-    display: flex;
-    align-items: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    box-shadow: none !important; /* Remove shadow for flat table look */
   }
-  
-  .project-row-header > div:nth-child(2) {
-    font-size: 13px !important;
-    font-weight: 800 !important;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: var(--text) !important;
-    flex-grow: 1;
-    padding-left: 8px;
-  }
-  
-  .project-row-header-content { display: none !important; }
-  
-  .project-row-header > div:last-child { display: flex !important; margin-left: auto; }
   .desktop-project-actions { display: none !important; }
   .mobile-project-menu { display: block !important; }
-  
-  /* Header Buttons: Swap Count for Add */
-  .mobile-task-count { display: none !important; }
   .mobile-add-btn { display: flex !important; }
 
-  /* Task Rows - Sleek One-Row Feel */
+  /* Task rows — Asana-inspired lean table layout */
   .task-delete-strip { display: flex; }
-  .task-row-container {
-    background: var(--background);
-    overflow: hidden;
-    position: relative;
+  .task-row-container { 
+    overflow: hidden; 
+    position: relative; 
+    border-bottom: 1px solid var(--border) !important;
   }
-  .task-row-sliding-wrapper { background: var(--background); }
 
   .task-row-grid {
-    display: flex !important;
+    grid-template-columns: 36px 1fr auto !important;
+    padding: 0 12px !important;
+    min-height: 40px !important; /* Compact row height */
     align-items: center !important;
-    padding: 10px 16px !important;
-    min-height: 52px !important;
-    border-bottom: 1px solid var(--border-subtle);
-    gap: 12px !important;
-    margin-left: 20px;
   }
 
-  /* Checkbox */
-  .task-row-grid > div:nth-child(1) {
-    flex: 0 0 24px;
-    margin: 0 !important;
-    padding: 0 !important;
-    display: flex;
-    justify-content: center;
-    width: auto !important;
-  }
-  .task-row-grid > div:nth-child(1) svg { width: 20px !important; height: 20px !important; }
-
-  /* Title - Clamped to 2 lines */
+  /* Task title: Single line, strict truncation for table feel */
   .task-row-grid > div:nth-child(2) {
-    flex: 1 1 auto;
-    min-width: 0;
-    margin: 0 !important;
-    padding: 0 !important;
+    padding-right: 8px !important;
+    min-width: 0 !important; /* Allows flex/grid truncation */
   }
-  
+
   .task-row-grid > div:nth-child(2) span {
-    font-size: 14px !important;
-    font-weight: 400 !important;
-    color: var(--text) !important;
-    line-height: 1.3;
-    display: -webkit-box !important;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
+    white-space: nowrap !important;
     overflow: hidden !important;
-    white-space: normal !important;
+    text-overflow: ellipsis !important;
+    font-size: 13px !important;
+    font-weight: 400 !important; /* Lighter weight for mobile */
+    line-height: 1.2 !important;
   }
 
-  /* Priority - Right aligned */
-  .task-row-grid > div:nth-child(3) {
-    flex: 0 0 auto;
-    margin: 0 !important;
-    display: flex;
-    gap: 4px;
-  }
+  /* Priority pills — ultra-compact */
+  .task-row-grid > div:nth-child(3) { gap: 2px !important; }
   .task-row-grid > div:nth-child(3) button {
-    font-size: 10px !important;
-    padding: 2px 5px !important;
-    height: 20px !important;
-    font-weight: 700 !important;
+    padding: 2px 6px !important;
+    font-size: 9px !important;
+    height: 18px !important;
+    border-width: 1px !important;
   }
 
-  /* Date & Actions - Hidden for clean list */
+  /* Hide Due Date and Actions columns */
   .task-row-grid > div:nth-child(4) { display: none !important; }
   .task-row-grid > div:nth-child(5) { display: none !important; }
+  .lv-row-delete-btn { display: none !important; }
 
-  /* Expanded Row — targets expanded details inside the sliding wrapper */
+  /* Expanded row details */
   .task-row-sliding-wrapper > div:nth-child(2) {
-    background: var(--surface-alt);
-    margin-left: 0;
-    padding: 16px !important;
-    border-bottom: 1px solid var(--border);
+    padding: 10px 12px 12px 48px !important;
+    border-top: 1px dotted var(--border) !important;
+    background: var(--surface-alt) !important;
   }
 
   /* 4. Task Modal - Centered Premium Modal */
@@ -913,4 +902,609 @@ input::placeholder, textarea::placeholder { color: var(--text-disabled); }
     background: var(--background) !important;
     overflow: visible !important;
   }
+}
+
+/* =====================================================================
+   GITNOTE MODULE
+   Notion/Asana-inspired professional notes reader
+   ===================================================================== */
+
+/* — Neutral palette scoped to this module only — */
+.gitnote-page {
+  /* surfaces */
+  --gn-bg:          #191919;
+  --gn-panel:       #202020;
+  --gn-hover:       #272727;
+  --gn-active:      #2c2c2c;
+  --gn-border:      #303030;
+  --gn-border-hi:   #404040;
+  /* text */
+  --gn-text-hi:     #f0f0f0;
+  --gn-text:        #c8c8c8;
+  --gn-text-2:      #888888;
+  --gn-text-3:      #555555;
+  /* icons */
+  --gn-icon-md:     #5b9cf6;
+  --gn-icon-pdf:    #e8784a;
+  --gn-icon-folder: #9b9b9b;
+  --gn-icon-file:   #6b6b6b;
+  /* accent */
+  --gn-accent:      #4a90d9;
+  --gn-accent-dim:  rgba(74,144,217,0.12);
+  --gn-link:        #5b9cf6;
+  /* code */
+  --gn-code-bg:     #1e1e1e;
+  --gn-code-border: #333333;
+  --gn-inline-bg:   rgba(255,255,255,0.07);
+  --gn-inline-fg:   #e3a3a3;
+  /* shadow */
+  --gn-shadow:      0 8px 32px rgba(0,0,0,0.5);
+
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--gn-bg);
+  color: var(--gn-text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+}
+
+/* ── Top bar ── */
+.gitnote-topbar {
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 18px;
+  border-bottom: 1px solid var(--gn-border);
+  background: var(--gn-panel);
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.gitnote-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.gitnote-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gitnote-brand-icon { color: var(--gn-accent); }
+
+.gitnote-brand-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gn-text-hi);
+  letter-spacing: -0.01em;
+}
+
+.gitnote-brand-sub {
+  font-size: 12px;
+  color: var(--gn-text-3);
+  padding-left: 2px;
+}
+.gitnote-brand-sub::before { content: '/ '; }
+
+.gitnote-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--gn-text-hi) !important;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.gitnote-icon-btn:hover {
+  background: var(--gn-hover);
+  color: var(--gn-text-hi) !important;
+}
+
+.gitnote-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--gn-border-hi);
+  background: transparent;
+  color: var(--gn-text-2);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.gitnote-back-btn:hover {
+  background: var(--gn-hover);
+  color: var(--gn-text-hi);
+  border-color: var(--gn-text-3);
+}
+
+/* ── Body layout ── */
+.gitnote-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  height: calc(100vh - 52px);
+}
+
+/* ── Explorer ── */
+.gitnote-explorer {
+  width: 260px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--gn-border);
+  overflow-y: auto;
+  background: var(--gn-panel);
+  display: flex;
+  flex-direction: column;
+}
+
+.gitnote-explorer-header {
+  padding: 16px 14px 10px;
+  position: sticky;
+  top: 0;
+  background: var(--gn-panel);
+  z-index: 1;
+}
+
+.gitnote-explorer-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gn-text-3);
+}
+
+.gitnote-tree-root { padding: 4px 0 20px; }
+
+.gitnote-tree-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--gn-text-2);
+  border-left: 2px solid transparent;
+  border-radius: 0 5px 5px 0;
+  margin: 0 6px 1px 0;
+  transition: background 0.1s, color 0.1s;
+  user-select: none;
+  line-height: 1.5;
+}
+.gitnote-tree-item:hover {
+  background: var(--gn-hover);
+  color: var(--gn-text-hi);
+}
+.gitnote-tree-item.selected {
+  border-left-color: var(--gn-accent);
+  background: var(--gn-active);
+  color: var(--gn-text-hi);
+}
+.gitnote-tree-folder {
+  color: var(--gn-text);
+  font-weight: 500;
+}
+.gitnote-tree-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+/* icon colours */
+.gn-icon-md     { color: var(--gn-icon-md);     flex-shrink: 0; }
+.gn-icon-pdf    { color: var(--gn-icon-pdf);    flex-shrink: 0; }
+.gn-icon-folder { color: var(--gn-icon-folder); flex-shrink: 0; }
+.gn-icon-file   { color: var(--gn-icon-file);   flex-shrink: 0; }
+
+/* state messages */
+.gn-state-msg {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 14px;
+  font-size: 12.5px;
+  color: var(--gn-text-3);
+}
+.gn-state-error { color: #e06060; }
+
+/* ── Viewer ── */
+.gitnote-viewer {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--gn-bg);
+}
+
+.gitnote-viewer-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 60px 40px;
+}
+.gn-empty-icon { color: var(--gn-text-3); }
+.gn-empty-text { font-size: 13.5px; color: var(--gn-text-3); margin: 0; }
+
+.gitnote-viewer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  border-bottom: 1px solid var(--gn-border);
+  background: var(--gn-panel);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  flex-shrink: 0;
+  gap: 12px;
+  min-height: 44px;
+}
+
+/* breadcrumb */
+.gn-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-wrap: wrap;
+}
+.gn-breadcrumb-item { display: flex; align-items: center; gap: 2px; }
+.gn-breadcrumb-sep  { color: var(--gn-text-3); flex-shrink: 0; }
+.gn-breadcrumb-seg  { font-size: 12.5px; color: var(--gn-text-2); }
+.gn-breadcrumb-current {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--gn-text-hi);
+}
+
+/* download button */
+.gn-download-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 5px;
+  border: 1px solid var(--gn-border-hi);
+  background: transparent;
+  color: var(--gn-text-2);
+  font-size: 11.5px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+}
+.gn-download-btn:hover {
+  background: var(--gn-hover);
+  color: var(--gn-text-hi);
+}
+.gn-download-prominent {
+  padding: 7px 16px;
+  font-size: 13px;
+  border-color: var(--gn-accent);
+  color: var(--gn-accent);
+}
+.gn-download-prominent:hover {
+  background: var(--gn-accent-dim);
+  color: var(--gn-text-hi);
+}
+
+/* header actions group */
+.gn-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* share button */
+.gn-share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--gn-accent);
+  background: transparent;
+  border: 1px solid var(--gn-accent);
+  border-radius: 5px;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+}
+.gn-share-btn:hover {
+  background: rgba(74, 144, 217, 0.12);
+  color: var(--gn-text-hi);
+}
+.gn-share-btn.copied {
+  color: #4caf50;
+  border-color: #4caf50;
+}
+
+/* share page — public viewer layout */
+.share-body {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* sign-in CTA in share topbar */
+.share-signin-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--gn-text-2);
+  background: transparent;
+  border: 1px solid var(--gn-border-hi);
+  border-radius: 6px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.share-signin-btn:hover {
+  background: var(--gn-hover);
+  color: var(--gn-text-hi);
+  border-color: var(--gn-text-3);
+}
+
+/* viewer content */
+.gitnote-viewer-content {
+  padding: 44px 56px;
+  flex: 1;
+}
+
+.gitnote-pdf-frame {
+  width: 100%;
+  height: calc(100vh - 108px);
+  border: none;
+  border-radius: 6px;
+}
+
+.gitnote-raw-text {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--gn-text-2);
+  background: var(--gn-code-bg);
+  padding: 20px 24px;
+  border-radius: 8px;
+  border: 1px solid var(--gn-code-border);
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* ── Mobile & Desktop Visibility ── */
+.gn-mobile-only {
+  display: none !important;
+}
+
+/* ── Mobile ── */
+@media (max-width: 768px) {
+  .gn-mobile-only {
+    display: inline-flex !important;
+  }
+  div.gn-mobile-only {
+    display: block !important;
+  }
+  .gn-desktop-only {
+    display: none !important;
+  }
+
+  .gitnote-explorer {
+    position: fixed;
+    top: 52px;
+    left: 0;
+    height: calc(100vh - 52px);
+    z-index: 1001;
+    transform: translateX(-100%);
+    transition: transform 0.22s ease;
+    box-shadow: var(--gn-shadow);
+    width: 82vw;
+    max-width: 300px;
+  }
+  .gitnote-explorer.mobile-open { transform: translateX(0); }
+  .gitnote-viewer-content { padding: 24px 20px; }
+  .gitnote-pdf-frame { height: calc(100vh - 116px); }
+}
+
+/* =====================================================================
+   MARKDOWN BODY — Notion-style neutral dark prose
+   ===================================================================== */
+
+.markdown-body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, 'Noto Sans', sans-serif;
+  font-size: 15.5px;
+  line-height: 1.78;
+  color: #b8b8b8;
+  word-wrap: break-word;
+  max-width: 740px;
+}
+
+.markdown-body > *:first-child { margin-top: 0 !important; }
+.markdown-body > *:last-child  { margin-bottom: 0 !important; }
+
+/* ── Headings ── */
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4,
+.markdown-body h5,
+.markdown-body h6 {
+  color: #f0f0f0;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+  margin-top: 2em;
+  margin-bottom: 0.5em;
+}
+.markdown-body h1 { font-size: 1.9em;  border-bottom: 1px solid #2e2e2e; padding-bottom: 0.3em; }
+.markdown-body h2 { font-size: 1.45em; border-bottom: 1px solid #282828; padding-bottom: 0.2em; }
+.markdown-body h3 { font-size: 1.2em; }
+.markdown-body h4 { font-size: 1.0em; color: #d4d4d4; }
+.markdown-body h5 { font-size: 0.9em; color: #888; }
+.markdown-body h6 { font-size: 0.85em; color: #666; }
+
+/* ── Text ── */
+.markdown-body p      { margin-top: 0; margin-bottom: 1em; }
+.markdown-body strong { color: #e8e8e8; font-weight: 700; }
+.markdown-body em     { font-style: italic; color: #c8c8c8; }
+.markdown-body del    { color: var(--gn-text-3); text-decoration: line-through; }
+.markdown-body mark   { background: rgba(255, 214, 0, 0.18); color: #f5e97a; padding: 0 3px; border-radius: 2px; }
+.markdown-body kbd    { font-family: var(--font-mono); font-size: 0.8em; padding: 2px 6px; background: #2a2a2a; border: 1px solid #3a3a3a; border-radius: 4px; box-shadow: 0 1px 0 #111; }
+
+/* ── Links ── */
+.markdown-body a {
+  color: #5b9cf6;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(91,156,246,0.28);
+  transition: color 0.13s, border-color 0.13s;
+}
+.markdown-body a:hover {
+  color: #89bbff;
+  border-bottom-color: rgba(137,187,255,0.55);
+}
+
+/* ── Inline code ── */
+.markdown-body :not(pre) > code {
+  font-family: var(--font-mono);
+  font-size: 0.865em;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #e3a3a3;
+  padding: 0.15em 0.42em;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+/* ── Code blocks ── */
+.markdown-body pre {
+  margin: 1.3em 0;
+  border-radius: 8px;
+  border: 1px solid #2e2e2e;
+  overflow: hidden;
+  background: #1e1e1e;
+}
+.markdown-body pre > code.hljs {
+  display: block;
+  background: #1e1e1e !important;   /* override atom-one-dark bg to match */
+  padding: 1.1em 1.4em;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  line-height: 1.65;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 0;
+  border: none;
+}
+
+/* ── Blockquotes ── */
+.markdown-body blockquote {
+  margin: 1.25em 0;
+  padding: 0.55em 1em;
+  border-left: 3px solid #3d3d3d;
+  color: #888;
+  font-style: italic;
+}
+.markdown-body blockquote > *:first-child { margin-top: 0; }
+.markdown-body blockquote > *:last-child  { margin-bottom: 0; }
+
+/* ── Lists ── */
+.markdown-body ul,
+.markdown-body ol {
+  margin-top: 0;
+  margin-bottom: 1em;
+  padding-left: 1.75em;
+}
+.markdown-body li { margin: 0.3em 0; line-height: 1.7; }
+.markdown-body li > p      { margin-top: 0.4em; margin-bottom: 0.4em; }
+.markdown-body li > ul,
+.markdown-body li > ol     { margin-top: 0; margin-bottom: 0; }
+.markdown-body ul > li       { list-style-type: disc; }
+.markdown-body ul ul > li    { list-style-type: circle; }
+.markdown-body ul ul ul > li { list-style-type: square; }
+
+.markdown-body ul.contains-task-list { list-style: none; padding-left: 0.25em; }
+.markdown-body .task-list-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.markdown-body .task-list-item input[type="checkbox"] {
+  margin-top: 4px;
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  accent-color: #4a90d9;
+  cursor: default;
+}
+
+/* ── Tables ── */
+.markdown-body table {
+  display: block;
+  overflow-x: auto;
+  border-collapse: collapse;
+  margin: 0.5em 0 1.5em;
+  font-size: 13.5px;
+  width: max-content;
+  max-width: 100%;
+}
+.markdown-body th {
+  background: #222222;
+  color: #e8e8e8;
+  font-weight: 600;
+  text-align: left;
+  padding: 8px 15px;
+  border: 1px solid #313131;
+  white-space: nowrap;
+  font-size: 12.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.markdown-body td {
+  padding: 7px 15px;
+  border: 1px solid #2a2a2a;
+  color: #b0b0b0;
+  vertical-align: top;
+}
+.markdown-body tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+.markdown-body tr:hover td           { background: rgba(255,255,255,0.04); }
+
+/* ── HR ── */
+.markdown-body hr {
+  border: none;
+  border-top: 1px solid #2e2e2e;
+  margin: 2em 0;
+}
+
+/* ── Images ── */
+.markdown-body img {
+  max-width: 100%;
+  border-radius: 6px;
+  border: 1px solid #2e2e2e;
+  display: block;
 }

@@ -33,21 +33,30 @@ export async function middleware(request) {
     }
   )
 
+  // Using getSession() instead of getUser() in middleware avoids making a network request 
+  // to Supabase on every single page load, saving API quota for the free tier.
   const {
-    data: { user },
-  } = await supabase.auth.getUser()
+    data: { session },
+  } = await supabase.auth.getSession()
 
-  // If user is not signed in and trying to access anything other than /login
-  if (!user && !request.nextUrl.pathname.startsWith('/login')) {
+  const user = session?.user
+
+  const pathname = request.nextUrl.pathname
+  const isPublic = pathname.startsWith('/login')
+    || pathname.startsWith('/share')
+    || pathname.startsWith('/api/gitnote')
+
+  // If user is not signed in and trying to access anything other than public routes
+  if (!user && !isPublic) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
   }
 
-  // If user is signed in and trying to access /login, redirect to home
-  if (user && request.nextUrl.pathname.startsWith('/login')) {
+  // If user is signed in and trying to access /login, redirect to dashboard
+  if (user && pathname.startsWith('/login')) {
     const url = request.nextUrl.clone()
-    url.pathname = '/'
+    url.pathname = '/task/dashboard'
     return NextResponse.redirect(url)
   }
 

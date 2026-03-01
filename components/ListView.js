@@ -1,54 +1,50 @@
 'use client';
 
 import { useState, useRef } from 'react'
-import { 
-  ChevronRight, 
-  ChevronDown, 
-  Calendar, 
-  CheckCircle2, 
-  Circle, 
-  AlertCircle, 
-  MoreHorizontal, 
-  MoreVertical, // Added
+import {
+  ChevronRight,
+  ChevronDown,
+  Calendar,
+  CheckCircle2,
+  Circle,
+  MoreVertical,
   Maximize2,
-  Clock,
   FileText,
-  Paperclip,
   Plus,
   X,
   Loader2,
   ArrowRight,
   History,
-  Edit, // Added
-  Trash2 // Added
+  Edit,
+  Trash2
 } from 'lucide-react'
 
 export default function ListView({ projects, tasks, onTaskClick, onTaskPatch, onViewCompleted }) {
-  // Global headers
+  const [expandedTaskId, setExpandedTaskId] = useState(null)
+
   const headers = [
-    { label: 'Status', width: '48px', align: 'center' },
-    { label: 'Task', width: 'minmax(300px, 2fr)', align: 'left' },
-    { label: 'Priority', width: '120px', align: 'left' },
-    { label: 'Due Date', width: '140px', align: 'left' },
-    { label: 'Actions', width: '80px', align: 'right' }
+    { label: 'Status', align: 'center' },
+    { label: 'Task', align: 'left' },
+    { label: 'Priority', align: 'left' },
+    { label: 'Due Date', align: 'left' },
+    { label: 'Actions', align: 'right' }
   ]
 
   return (
-    <div className="list-view" style={{ 
-      padding: '0 32px 32px 32px', 
-      height: 'calc(100vh - 64px)', 
+    <div className="list-view" style={{
+      padding: '0 32px 32px 32px',
+      height: 'calc(100vh - 64px)',
       overflowY: 'auto',
       display: 'flex',
       flexDirection: 'column',
-      gap: '24px'
     }}>
       {/* Global List Header */}
       <div className="list-view-header" style={{
         display: 'grid',
         gridTemplateColumns: '48px minmax(300px, 2fr) 120px 140px 80px',
-        padding: '0 16px',
-        marginBottom: '-12px',
-        marginTop: '24px'
+        padding: '0 16px 10px 16px',
+        marginTop: '24px',
+        borderBottom: '2px solid var(--border-strong)',
       }}>
         {headers.map((h, i) => (
           <div key={i} style={{
@@ -68,7 +64,6 @@ export default function ListView({ projects, tasks, onTaskClick, onTaskPatch, on
       </div>
 
       {projects.map(project => {
-        // Filter out 'Done' tasks; sort by priority then creation time
         const priorityScore = (t) => (t.urgent && t.important) ? 0 : t.urgent ? 1 : t.important ? 2 : 3
         const projectTasks = tasks.filter(t => t.project_id === project.id && t.status !== 'Done')
           .sort((a, b) => {
@@ -78,22 +73,25 @@ export default function ListView({ projects, tasks, onTaskClick, onTaskPatch, on
           })
 
         return (
-          <ProjectGroup 
-            key={project.id} 
-            project={project} 
-            tasks={projectTasks} 
+          <ProjectGroup
+            key={project.id}
+            project={project}
+            tasks={projectTasks}
             onTaskClick={onTaskClick}
             onTaskPatch={onTaskPatch}
             onViewCompleted={() => onViewCompleted(project)}
+            expandedTaskId={expandedTaskId}
+            onToggleExpand={(taskId) => setExpandedTaskId(prev => prev === taskId ? null : taskId)}
           />
         )
       })}
-      
+
       {projects.length === 0 && (
-        <div style={{ 
-          padding: '48px', 
-          textAlign: 'center', 
-          border: '1px dashed var(--border-strong)', 
+        <div style={{
+          padding: '48px',
+          marginTop: '24px',
+          textAlign: 'center',
+          border: '1px dashed var(--border-strong)',
           borderRadius: '12px',
           color: 'var(--text-disabled)',
           fontSize: '13px'
@@ -105,9 +103,8 @@ export default function ListView({ projects, tasks, onTaskClick, onTaskPatch, on
   )
 }
 
-function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewCompleted }) {
+function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewCompleted, expandedTaskId, onToggleExpand }) {
   const [isExpanded, setIsExpanded] = useState(true)
-  const [expandedTaskId, setExpandedTaskId] = useState(null)
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showMenu, setShowMenu] = useState(false)
   const [newTaskSummary, setNewTaskSummary] = useState('')
@@ -122,7 +119,7 @@ function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewComplete
     setNewTaskImportant(false)
     setShowCreateModal(true)
   }
-  
+
   const handleEditProject = async () => {
     const newName = prompt('Enter new project name:', project.name)
     if (!newName || newName === project.name) return
@@ -186,118 +183,118 @@ function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewComplete
 
   return (
     <>
-      <div className="project-group-container" style={{
-        background: 'var(--surface)',
-        border: '1px solid var(--border)',
-        borderRadius: '12px',
-        overflow: 'hidden',
-        transition: 'all 0.2s ease',
-        boxShadow: isExpanded ? 'var(--shadow-md)' : 'none'
-      }}>
-        {/* Project Header Row */}
-        <div 
-          onClick={() => setIsExpanded(!isExpanded)}
+      {/* Flat section — no card wrapper */}
+      <div className="project-section">
+        {/* Section Header */}
+        <div
+          className="project-section-header"
           style={{
-            padding: '12px 16px',
-            background: 'var(--surface-alt)',
-            borderBottom: isExpanded ? '1px solid var(--border)' : 'none',
             display: 'flex',
             alignItems: 'center',
-            gap: '12px',
-            cursor: 'pointer',
-            userSelect: 'none',
-            transition: 'background 0.15s ease'
+            justifyContent: 'space-between',
+            padding: '20px 16px 10px 16px',
+            borderBottom: '1px solid var(--border)',
           }}
-          className="project-row-header"
         >
-          <div style={{ 
-            color: 'var(--text-muted)', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center',
-            width: '20px',
-            height: '20px'
-          }}>
-            {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-          </div>
-          
-          <div style={{ 
-            fontSize: '13px', 
-            fontWeight: '700', 
-            color: 'var(--text)', 
-            letterSpacing: '-0.01em' 
-          }}>
-            {project.name}
+          {/* Left: collapse toggle + name + count */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                padding: '0',
+                color: 'var(--text-muted)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+              }}
+            >
+              {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+            </button>
+            <span
+              onClick={() => {
+                if (window.getSelection().toString().length === 0) {
+                  setIsExpanded(!isExpanded)
+                }
+              }}
+              style={{
+                fontSize: '13px',
+                fontWeight: '700',
+                color: 'var(--text)',
+                letterSpacing: '-0.01em',
+                cursor: 'text',
+              }}
+            >
+              {project.name}
+            </span>
+            <span className="project-task-count" style={{
+              fontSize: '10px',
+              fontWeight: '600',
+              color: 'var(--text-disabled)',
+              background: 'var(--surface-alt)',
+              padding: '2px 8px',
+              borderRadius: '999px',
+              border: '1px solid var(--border-strong)',
+            }}>
+              {tasks.length}
+            </span>
           </div>
 
-          <div className="mobile-task-count" style={{
-            fontSize: '10px',
-            fontWeight: '600',
-            color: 'var(--text-disabled)',
-            background: 'var(--background)',
-            padding: '2px 8px',
-            borderRadius: '10px',
-            border: '1px solid var(--border-strong)'
-          }}>
-            {tasks.length} TASKS
-          </div>
+          {/* Right: action buttons */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            {/* Desktop actions */}
+            <div className="desktop-project-actions" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <button
+                onClick={(e) => { e.stopPropagation(); onViewCompleted(); }}
+                className="lv-pill-btn"
+                title="View Completed Tasks"
+              >
+                <History size={11} />
+                <span>History</span>
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); handleEditProject(); }}
+                className="lv-pill-btn"
+                title="Rename Project"
+                style={{ padding: '4px 8px', color: 'var(--text-muted)' }}
+              >
+                <Edit size={12} />
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); handleDeleteProject(); }}
+                className="lv-pill-btn"
+                title="Delete Project"
+                style={{ padding: '4px 8px', color: 'var(--error)' }}
+              >
+                <Trash2 size={12} />
+              </button>
+              <div style={{ width: '1px', height: '14px', background: 'var(--border-strong)', margin: '0 4px' }} />
+              <button
+                onClick={handleOpenCreate}
+                className="lv-pill-btn lv-pill-btn-primary"
+              >
+                <Plus size={11} />
+                <span>Add Task</span>
+              </button>
+            </div>
 
-          <div style={{ flexGrow: 1 }} />
-          
-          {/* Right Side Actions */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            {/* Mobile Add Task Button */}
+            {/* Mobile add button */}
             <button
               onClick={handleOpenCreate}
-              className="mobile-add-btn"
-              style={{ 
-                display: 'none', 
-                padding: '6px', 
+              className="mobile-add-btn btn-ghost"
+              style={{
+                display: 'none',
+                padding: '5px',
                 borderRadius: '6px',
-                background: 'var(--surface-raised)',
                 border: '1px solid var(--accent)',
-                color: 'var(--accent)' 
+                color: 'var(--accent)'
               }}
             >
               <Plus size={14} />
             </button>
 
-            {/* Desktop Actions */}
-            <div className="desktop-project-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <button
-                onClick={(e) => { e.stopPropagation(); onViewCompleted(); }}
-                className="btn-ghost"
-                style={{
-                  padding: '4px 8px',
-                  height: '24px',
-                  fontSize: '10px',
-                  border: '1px solid var(--border-strong)',
-                  borderRadius: '6px',
-                  color: 'var(--text-disabled)'
-                }}
-                title="View Completed Tasks"
-              >
-                <History size={12} />
-                <span style={{ fontWeight: '700' }}>HISTORY</span>
-              </button>
-
-              <button
-                onClick={handleOpenCreate}
-                className="btn-ghost"
-                style={{ 
-                  padding: '4px 8px', 
-                  height: '24px', 
-                  fontSize: '10px',
-                  border: '1px solid var(--border-strong)',
-                  borderRadius: '6px'
-                }}
-              >
-                <Plus size={12} />
-                <span style={{ fontWeight: '700' }}>ADD TASK</span>
-              </button>
-            </div>
-
-            {/* Mobile Menu */}
+            {/* Mobile menu */}
             <div className="mobile-project-menu" style={{ position: 'relative' }}>
               <button
                 onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }}
@@ -306,12 +303,12 @@ function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewComplete
               >
                 <MoreVertical size={16} />
               </button>
-              
+
               {showMenu && (
                 <>
-                  <div 
-                    style={{ position: 'fixed', inset: 0, zIndex: 90 }} 
-                    onClick={(e) => { e.stopPropagation(); setShowMenu(false); }} 
+                  <div
+                    style={{ position: 'fixed', inset: 0, zIndex: 90 }}
+                    onClick={(e) => { e.stopPropagation(); setShowMenu(false); }}
                   />
                   <div style={{
                     position: 'absolute',
@@ -328,8 +325,7 @@ function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewComplete
                     flexDirection: 'column',
                     padding: '4px'
                   }}>
-                    {/* Add Task moved out */}
-                    <button 
+                    <button
                       onClick={(e) => { e.stopPropagation(); onViewCompleted(); setShowMenu(false); }}
                       className="btn-ghost"
                       style={{ justifyContent: 'flex-start', padding: '8px 12px', fontSize: '12px' }}
@@ -337,14 +333,14 @@ function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewComplete
                       <History size={14} /> History
                     </button>
                     <div style={{ height: '1px', background: 'var(--border)', margin: '4px 0' }} />
-                    <button 
+                    <button
                       onClick={(e) => { e.stopPropagation(); handleEditProject(); }}
                       className="btn-ghost"
                       style={{ justifyContent: 'flex-start', padding: '8px 12px', fontSize: '12px' }}
                     >
                       <Edit size={14} /> Rename
                     </button>
-                    <button 
+                    <button
                       onClick={(e) => { e.stopPropagation(); handleDeleteProject(); }}
                       className="btn-ghost"
                       style={{ justifyContent: 'flex-start', padding: '8px 12px', fontSize: '12px', color: 'var(--error)' }}
@@ -360,24 +356,24 @@ function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewComplete
 
         {/* Task Rows */}
         {isExpanded && (
-          <div style={{ display: 'flex', flexDirection: 'column', maxHeight: '600px', overflowY: 'auto' }}>
+          <div>
             {tasks.map(task => (
-              <TaskRow 
-                key={task.id} 
-                task={task} 
+              <TaskRow
+                key={task.id}
+                task={task}
                 onTaskClick={onTaskClick}
                 onTaskPatch={onTaskPatch}
                 isExpanded={expandedTaskId === task.id}
-                onToggleExpand={() => setExpandedTaskId(prev => prev === task.id ? null : task.id)}
+                onToggleExpand={() => onToggleExpand(task.id)}
               />
             ))}
             {tasks.length === 0 && (
-              <div style={{ 
-                padding: '24px', 
-                textAlign: 'center', 
-                fontSize: '11px', 
-                color: 'var(--text-disabled)', 
-                fontStyle: 'italic' 
+              <div style={{
+                padding: '14px 16px 14px 64px',
+                fontSize: '11px',
+                color: 'var(--text-disabled)',
+                fontStyle: 'italic',
+                borderBottom: '1px solid var(--border)'
               }}>
                 No active tasks
               </div>
@@ -453,7 +449,13 @@ function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewComplete
                 <textarea
                   autoFocus
                   value={newTaskSummary}
-                  onChange={e => setNewTaskSummary(e.target.value)}
+                  onChange={e => {
+                    let val = e.target.value;
+                    if (val.includes(' ')) {
+                      val = val.charAt(0).toUpperCase() + val.slice(1);
+                    }
+                    setNewTaskSummary(val);
+                  }}
                   onKeyDown={e => {
                     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleCreateTask(); }
                   }}
@@ -492,7 +494,7 @@ function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewComplete
                       display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
                       gap: '8px', padding: '14px', borderRadius: 'var(--radius-md)',
                       background: newTaskUrgent ? 'var(--warning-muted)' : 'var(--background)',
-                      border: `1px solid ${newTaskUrgent ? 'rgba(245,158,11,0.45)' : 'var(--border-strong)'}`,
+                      border: `1px solid ${newTaskUrgent ? 'var(--warning)' : 'var(--border-strong)'}`,
                       cursor: 'pointer', transition: 'all 0.15s ease',
                       color: newTaskUrgent ? 'var(--warning)' : 'var(--text-disabled)',
                     }}
@@ -500,8 +502,8 @@ function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewComplete
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
                       <div style={{
                         width: '22px', height: '22px', borderRadius: 'var(--radius-sm)',
-                        background: newTaskUrgent ? 'rgba(245,158,11,0.2)' : 'var(--surface-alt)',
-                        border: `1px solid ${newTaskUrgent ? 'rgba(245,158,11,0.4)' : 'var(--border-strong)'}`,
+                        background: newTaskUrgent ? 'var(--warning-muted)' : 'var(--surface-alt)',
+                        border: `1px solid ${newTaskUrgent ? 'var(--warning)' : 'var(--border-strong)'}`,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         fontSize: '10px', fontWeight: '900', fontFamily: 'var(--font-mono)',
                         transition: 'all 0.15s',
@@ -526,7 +528,7 @@ function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewComplete
                       display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
                       gap: '8px', padding: '14px', borderRadius: 'var(--radius-md)',
                       background: newTaskImportant ? 'var(--accent-muted)' : 'var(--background)',
-                      border: `1px solid ${newTaskImportant ? 'rgba(99,102,241,0.45)' : 'var(--border-strong)'}`,
+                      border: `1px solid ${newTaskImportant ? 'var(--accent)' : 'var(--border-strong)'}`,
                       cursor: 'pointer', transition: 'all 0.15s ease',
                       color: newTaskImportant ? 'var(--accent)' : 'var(--text-disabled)',
                     }}
@@ -535,7 +537,7 @@ function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewComplete
                       <div style={{
                         width: '22px', height: '22px', borderRadius: 'var(--radius-sm)',
                         background: newTaskImportant ? 'var(--accent-subtle)' : 'var(--surface-alt)',
-                        border: `1px solid ${newTaskImportant ? 'rgba(99,102,241,0.4)' : 'var(--border-strong)'}`,
+                        border: `1px solid ${newTaskImportant ? 'var(--accent)' : 'var(--border-strong)'}`,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         fontSize: '10px', fontWeight: '900', fontFamily: 'var(--font-mono)',
                         transition: 'all 0.15s',
@@ -554,12 +556,12 @@ function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewComplete
                   </button>
                 </div>
 
-                {/* Quadrant label — shown when any flag active */}
+                {/* Quadrant label */}
                 {(newTaskUrgent || newTaskImportant) && (
                   <div style={{
                     marginTop: '10px', padding: '7px 12px', borderRadius: 'var(--radius-sm)',
                     background: newTaskUrgent && newTaskImportant ? 'var(--error-muted)' : newTaskUrgent ? 'var(--warning-muted)' : 'var(--accent-subtle)',
-                    border: `1px solid ${newTaskUrgent && newTaskImportant ? 'rgba(239,68,68,0.25)' : newTaskUrgent ? 'rgba(245,158,11,0.25)' : 'rgba(99,102,241,0.2)'}`,
+                    border: `1px solid ${newTaskUrgent && newTaskImportant ? 'var(--error)' : newTaskUrgent ? 'var(--warning)' : 'var(--accent)'}`,
                     display: 'flex', alignItems: 'center', gap: '8px'
                   }}>
                     <div style={{
@@ -638,7 +640,6 @@ function TaskRow({ task, onTaskClick, onTaskPatch, isExpanded, onToggleExpand })
   const handleToggleDone = (e) => {
     e.stopPropagation()
     const newStatus = isDone ? 'In Progress' : 'Done'
-    // Optimistic update
     onTaskPatch(task.id, { status: newStatus })
     patchTask({ status: newStatus })
   }
@@ -646,12 +647,10 @@ function TaskRow({ task, onTaskClick, onTaskPatch, isExpanded, onToggleExpand })
   const handleToggleFlag = (e, flag) => {
     e.stopPropagation()
     const newVal = !task[flag]
-    // Optimistic update
     onTaskPatch(task.id, { [flag]: newVal })
     patchTask({ [flag]: newVal })
   }
 
-  // --- Swipe-to-delete (mobile only) ---
   const handleTouchStart = (e) => {
     if (isExpanded) return
     touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
@@ -663,7 +662,6 @@ function TaskRow({ task, onTaskClick, onTaskPatch, isExpanded, onToggleExpand })
     if (!touchStartRef.current || isExpanded) return
     const dx = e.touches[0].clientX - touchStartRef.current.x
     const dy = e.touches[0].clientY - touchStartRef.current.y
-    // Determine primary direction on first significant movement
     if (!swipingRef.current && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) {
       isHorizontalRef.current = Math.abs(dx) > Math.abs(dy)
       swipingRef.current = true
@@ -697,49 +695,26 @@ function TaskRow({ task, onTaskClick, onTaskPatch, isExpanded, onToggleExpand })
     }
   }
 
-  const priorityColor = task.urgent && task.important ? 'var(--error)'
-                      : task.urgent ? 'var(--warning)'
-                      : task.important ? 'var(--accent)'
-                      : 'transparent'
-
   return (
     <>
-      <div className="task-row-container" style={{
-        display: 'flex',
-        flexDirection: 'column',
-        transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-        position: 'relative',
-
-        // Prominent Focus Styles
-        zIndex: isExpanded ? 10 : 1,
-        background: isExpanded ? 'var(--surface-raised)' : 'transparent',
-
-        // Borders & Shape
-        borderTop: isExpanded ? '1px solid var(--accent-muted)' : '1px solid transparent',
-        borderRight: isExpanded ? '1px solid var(--accent-muted)' : '1px solid transparent',
-        borderBottom: isExpanded ? '1px solid var(--accent-muted)' : '1px solid var(--border-subtle)',
-        borderLeft: isExpanded
-          ? `4px solid ${priorityColor !== 'transparent' ? priorityColor : 'var(--accent)'}`
-          : `4px solid ${priorityColor}`,
-        borderRadius: isExpanded ? '8px' : '0',
-
-        // Spacing & Lift
-        margin: isExpanded ? '16px 0' : '0',
-        boxShadow: isExpanded ? '0 12px 24px -8px rgba(0, 0, 0, 0.4), 0 4px 8px -4px rgba(0, 0, 0, 0.2)' : 'none',
-        transform: isExpanded ? 'scale(1.01)' : 'scale(1)'
-      }}
+      <div
+        className="task-row-container"
+        style={{
+          position: 'relative',
+          borderBottom: '1px solid var(--border)',
+          background: isExpanded ? 'var(--surface-alt)' : 'transparent',
+          transition: 'background 0.15s ease',
+        }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        {/* Delete strip — revealed on left-swipe (mobile only, hidden via CSS on desktop) */}
+        {/* Delete strip — revealed on left-swipe (mobile) */}
         <div
           className="task-delete-strip"
           style={{
             position: 'absolute',
-            top: 0,
-            right: 0,
-            bottom: 0,
+            top: 0, right: 0, bottom: 0,
             width: '80px',
             background: 'var(--error)',
             display: 'flex',
@@ -766,18 +741,17 @@ function TaskRow({ task, onTaskClick, onTaskPatch, isExpanded, onToggleExpand })
             transition: swipeOffset === 0 ? 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)' : 'none',
             position: 'relative',
             zIndex: 1,
-            background: isExpanded ? 'var(--surface-raised)' : undefined
           }}
         >
-          {/* Main Row Content */}
+          {/* Main Row */}
           <div
             style={{
               display: 'grid',
               gridTemplateColumns: '48px minmax(300px, 2fr) 120px 140px 80px',
               alignItems: 'center',
-              padding: '12px 16px',
-              minHeight: '48px',
-              cursor: 'pointer'
+              padding: '0 16px',
+              minHeight: '44px',
+              cursor: 'pointer',
             }}
             className="task-row-grid"
             onClick={onToggleExpand}
@@ -797,20 +771,15 @@ function TaskRow({ task, onTaskClick, onTaskPatch, isExpanded, onToggleExpand })
                   justifyContent: 'center'
                 }}
               >
-                {isDone ? <CheckCircle2 size={18} fill="var(--success-muted)" /> : <Circle size={18} />}
+                {isDone ? <CheckCircle2 size={16} fill="var(--success-muted)" /> : <Circle size={16} />}
               </button>
             </div>
 
             {/* Task Title */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              paddingRight: '16px'
-            }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingRight: '16px' }}>
               <span style={{
                 fontSize: '13px',
-                fontWeight: isDone ? '400' : '600',
+                fontWeight: '400',
                 color: isDone ? 'var(--text-disabled)' : 'var(--text)',
                 textDecoration: isDone ? 'line-through' : 'none',
                 whiteSpace: 'nowrap',
@@ -819,23 +788,23 @@ function TaskRow({ task, onTaskClick, onTaskPatch, isExpanded, onToggleExpand })
               }}>
                 {task.summary}
               </span>
-              {task.notes_markdown && <FileText size={12} color="var(--text-disabled)" />}
+              {task.notes_markdown && <FileText size={11} color="var(--text-disabled)" />}
             </div>
 
-            {/* Priority */}
+            {/* Priority — pill badges */}
             <div style={{ display: 'flex', gap: '4px' }}>
               <button
                 onClick={(e) => handleToggleFlag(e, 'urgent')}
                 title="Toggle Urgency"
                 style={{
-                  padding: '3px 8px',
-                  fontSize: '9px',
-                  fontWeight: '800',
-                  letterSpacing: '0.06em',
-                  borderRadius: '4px',
+                  padding: '2px 9px',
+                  fontSize: '10px',
+                  fontWeight: '700',
+                  letterSpacing: '0.04em',
+                  borderRadius: '999px',
                   background: task.urgent ? 'var(--warning-muted)' : 'transparent',
                   color: task.urgent ? 'var(--warning)' : 'var(--text-disabled)',
-                  border: `1px solid ${task.urgent ? 'rgba(245, 158, 11, 0.35)' : 'var(--border-strong)'}`,
+                  border: `1px solid ${task.urgent ? 'var(--warning)' : 'var(--border-strong)'}`,
                   transition: 'all 0.12s',
                   cursor: 'pointer'
                 }}
@@ -846,14 +815,14 @@ function TaskRow({ task, onTaskClick, onTaskPatch, isExpanded, onToggleExpand })
                 onClick={(e) => handleToggleFlag(e, 'important')}
                 title="Toggle Importance"
                 style={{
-                  padding: '3px 8px',
-                  fontSize: '9px',
-                  fontWeight: '800',
-                  letterSpacing: '0.06em',
-                  borderRadius: '4px',
+                  padding: '2px 9px',
+                  fontSize: '10px',
+                  fontWeight: '700',
+                  letterSpacing: '0.04em',
+                  borderRadius: '999px',
                   background: task.important ? 'var(--accent-muted)' : 'transparent',
                   color: task.important ? 'var(--accent)' : 'var(--text-disabled)',
-                  border: `1px solid ${task.important ? 'rgba(99, 102, 241, 0.35)' : 'var(--border-strong)'}`,
+                  border: `1px solid ${task.important ? 'var(--accent)' : 'var(--border-strong)'}`,
                   transition: 'all 0.12s',
                   cursor: 'pointer'
                 }}
@@ -867,7 +836,7 @@ function TaskRow({ task, onTaskClick, onTaskPatch, isExpanded, onToggleExpand })
               {task.due_date ? (
                 <>
                   <Calendar size={12} />
-                  <span style={{ fontFamily: 'var(--font-mono)' }}>{task.due_date}</span>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px' }}>{task.due_date}</span>
                 </>
               ) : (
                 <span style={{ opacity: 0.3 }}>—</span>
@@ -884,19 +853,26 @@ function TaskRow({ task, onTaskClick, onTaskPatch, isExpanded, onToggleExpand })
               >
                 <Maximize2 size={14} />
               </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm(true); }}
+                className="lv-row-delete-btn"
+                title="Delete Task"
+              >
+                <Trash2 size={14} />
+              </button>
             </div>
           </div>
 
           {/* Expanded Details Row */}
           {isExpanded && (
             <div style={{
-              padding: '0 16px 16px 64px', // indented to align with text
+              padding: '12px 16px 16px 64px',
               display: 'flex',
               flexDirection: 'column',
               gap: '12px',
-              cursor: 'default'
+              cursor: 'default',
+              borderTop: '1px solid var(--border)',
             }}>
-              {/* Notes Snippet */}
               {task.notes_markdown && (
                 <div style={{
                   fontSize: '12px',
@@ -905,16 +881,14 @@ function TaskRow({ task, onTaskClick, onTaskPatch, isExpanded, onToggleExpand })
                   background: 'var(--background)',
                   padding: '12px',
                   borderRadius: '6px',
-                  border: '1px solid var(--border-subtle)',
+                  border: '1px solid var(--border)',
                   maxWidth: '80%'
                 }}>
                   <div style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-disabled)', marginBottom: '4px', textTransform: 'uppercase' }}>Notes Snippet</div>
                   {task.notes_markdown.slice(0, 300) + (task.notes_markdown.length > 300 ? '...' : '')}
                 </div>
               )}
-
-              {/* Quick Actions Bar */}
-              <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+              <div style={{ display: 'flex', gap: '8px' }}>
                 <button
                   onClick={() => onTaskClick(task)}
                   className="btn-primary"
@@ -945,26 +919,17 @@ function TaskRow({ task, onTaskClick, onTaskPatch, isExpanded, onToggleExpand })
             borderLeft: '1px solid var(--border-strong)',
             borderTop: '2px solid var(--error)'
           }}>
-            {/* Header */}
             <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               padding: '16px 24px',
               background: 'var(--surface-alt)',
               borderBottom: '1px solid var(--border)'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{
-                  width: '28px',
-                  height: '28px',
-                  borderRadius: 'var(--radius-sm)',
-                  background: 'var(--error-muted)',
-                  border: '1px solid rgba(248, 113, 113, 0.2)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0
+                  width: '28px', height: '28px', borderRadius: 'var(--radius-sm)',
+                  background: 'var(--error-muted)', border: '1px solid var(--error)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
                 }}>
                   <Trash2 size={14} color="var(--error)" />
                 </div>
@@ -975,16 +940,11 @@ function TaskRow({ task, onTaskClick, onTaskPatch, isExpanded, onToggleExpand })
                   </div>
                 </div>
               </div>
-              <button
-                onClick={() => setShowDeleteConfirm(false)}
-                className="btn-ghost"
-                style={{ padding: '6px', borderRadius: 'var(--radius-sm)', flexShrink: 0 }}
-              >
+              <button onClick={() => setShowDeleteConfirm(false)} className="btn-ghost" style={{ padding: '6px', borderRadius: 'var(--radius-sm)', flexShrink: 0 }}>
                 <X size={16} />
               </button>
             </div>
 
-            {/* Body */}
             <div style={{ padding: '20px 24px' }}>
               <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
                 Are you sure you want to permanently delete{' '}
@@ -995,13 +955,9 @@ function TaskRow({ task, onTaskClick, onTaskPatch, isExpanded, onToggleExpand })
               </p>
             </div>
 
-            {/* Footer */}
             <div style={{
-              padding: '16px 24px',
-              borderTop: '1px solid var(--border)',
-              display: 'flex',
-              justifyContent: 'flex-end',
-              gap: '8px',
+              padding: '16px 24px', borderTop: '1px solid var(--border)',
+              display: 'flex', justifyContent: 'flex-end', gap: '8px',
               background: 'var(--surface-alt)'
             }}>
               <button
@@ -1016,15 +972,10 @@ function TaskRow({ task, onTaskClick, onTaskPatch, isExpanded, onToggleExpand })
                 onClick={handleDeleteTask}
                 disabled={deleting}
                 style={{
-                  fontSize: '12px',
-                  padding: '8px 16px',
-                  background: 'var(--error)',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 'var(--radius-md)',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
+                  fontSize: '12px', padding: '8px 16px',
+                  background: 'var(--error)', color: 'white',
+                  border: 'none', borderRadius: 'var(--radius-md)',
+                  display: 'inline-flex', alignItems: 'center', gap: '8px',
                   cursor: deleting ? 'not-allowed' : 'pointer',
                   opacity: deleting ? 0.7 : 1
                 }}

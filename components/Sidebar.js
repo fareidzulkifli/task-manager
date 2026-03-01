@@ -4,19 +4,20 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useParams, usePathname } from 'next/navigation'
 import LogoutButton from './LogoutButton'
-import { 
-  LayoutDashboard, 
-  Plus, 
-  ChevronRight, 
-  Briefcase, 
-  Settings, 
-  LogOut, 
+import {
+  LayoutDashboard,
+  Plus,
+  ChevronRight,
+  Briefcase,
+  Settings,
+  LogOut,
   MoreVertical,
   Layers,
   CheckCircle2,
   Sun,
   Moon,
-  Monitor
+  Monitor,
+  BookOpen
 } from 'lucide-react'
 
 export default function Sidebar() {
@@ -26,7 +27,7 @@ export default function Sidebar() {
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const params = useParams()
   const pathname = usePathname()
-  const currentOrgId = params?.id
+  const currentOrgSlug = params?.slug
 
   const fetchNav = async () => {
     try {
@@ -65,7 +66,7 @@ export default function Sidebar() {
   useEffect(() => {
     // Close sidebar on route change (mobile)
     setIsMobileOpen(false)
-  }, [pathname, currentOrgId])
+  }, [pathname, currentOrgSlug])
 
   useEffect(() => {
     if (pathname === '/login') return
@@ -100,7 +101,11 @@ export default function Sidebar() {
     }
   }
 
-  if (pathname === '/login') return null
+  if (pathname === '/login' || pathname.startsWith('/share')) return null
+
+  // On desktop, we want to hide the sidebar completely for GitNotes so it remains full-screen.
+  // We use a CSS class to hide it on desktop instead of inline 'display: none' so mobile animations still work.
+  const isGitNoteRoute = pathname.startsWith('/gitnote');
 
   return (
     <>
@@ -110,10 +115,13 @@ export default function Sidebar() {
         onClick={() => setIsMobileOpen(false)}
       />
       
-      <aside className={`sidebar ${isMobileOpen ? 'mobile-open' : ''}`} style={{ background: 'var(--surface)' }}>
+      <aside 
+        className={`sidebar ${isMobileOpen ? 'mobile-open' : ''} ${isGitNoteRoute ? 'sidebar-hidden-desktop' : ''}`} 
+        style={{ background: 'var(--surface)' }}
+      >
         <div className="sidebar-header">
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Link href="/" className="sidebar-logo">
+            <Link href="/task/dashboard" className="sidebar-logo">
               <div className="sidebar-logo-icon">
                 <Layers size={14} color="#fff" strokeWidth={3} />
               </div>
@@ -151,9 +159,13 @@ export default function Sidebar() {
 
       <nav className="sidebar-nav">
         <div className="nav-section">
-          <Link href="/" className={`sidebar-link ${pathname === '/' ? 'active' : ''}`} style={{ fontSize: '12px', fontWeight: '700', fontFamily: 'monospace' }}>
+          <Link href="/task/dashboard" className={`sidebar-link ${pathname === '/task/dashboard' ? 'active' : ''}`} style={{ fontSize: '12px', fontWeight: '700', fontFamily: 'monospace' }}>
             <LayoutDashboard size={16} />
             <span>Dashboard</span>
+          </Link>
+          <Link href="/gitnote" className={`sidebar-link ${pathname.startsWith('/gitnote') ? 'active' : ''}`} style={{ fontSize: '12px', fontWeight: '700', fontFamily: 'monospace', marginTop: '2px' }}>
+            <BookOpen size={16} />
+            <span>GitNotes</span>
           </Link>
         </div>
 
@@ -165,17 +177,17 @@ export default function Sidebar() {
             <div className="sidebar-orgs">
               {navData.map(org => (
                 <div key={org.id} className="sidebar-org-group">
-                  <Link 
-                    href={`/org/${org.id}`} 
-                    className={`sidebar-link ${currentOrgId === org.id ? 'active' : ''}`}
+                  <Link
+                    href={`/task/org/${org.slug}`}
+                    className={`sidebar-link ${currentOrgSlug === org.slug ? 'active' : ''}`}
                     style={{ marginTop: '2px', fontSize: '12px', fontWeight: '700', fontFamily: 'monospace' }}
                   >
                     <Briefcase size={16} />
                     <span style={{ flexGrow: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{org.name.toUpperCase()}</span>
-                    {currentOrgId === org.id && <ChevronRight size={12} opacity={0.5} />}
+                    {currentOrgSlug === org.slug && <ChevronRight size={12} opacity={0.5} />}
                   </Link>
-                  
-                  {currentOrgId === org.id && (
+
+                  {currentOrgSlug === org.slug && (
                     <div className="sidebar-projects" style={{ borderLeft: '1px solid var(--border-strong)', marginLeft: '20px', paddingLeft: '0' }}>
                       {org.projects.map(project => (
                         <div key={project.id} className="sidebar-project-item" style={{ paddingLeft: '16px' }}>

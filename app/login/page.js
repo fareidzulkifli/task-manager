@@ -42,9 +42,9 @@ export default function LoginPage() {
           <div className="sidebar-logo-icon" style={{ width: '52px', height: '52px', borderRadius: '14px', marginBottom: '20px' }}>
             <Layers size={26} color="#fff" />
           </div>
-          <h1 className="text-gradient" style={{ fontSize: '26px', fontWeight: 700, margin: 0 }}>Task Manager</h1>
+          <h1 className="text-gradient" style={{ fontSize: '26px', fontWeight: 700, margin: 0 }}>Fareid Workspace</h1>
           <p style={{ marginTop: '8px', color: 'var(--text-muted)', fontSize: '13px' }}>
-            Sign in to your personal workspace
+            Sign in to start working
           </p>
         </div>
 
@@ -92,16 +92,6 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* Divider */}
-        <div className="login-divider">
-          <span>or</span>
-        </div>
-
-        {/* GitNotes shortcut */}
-        <Link href="/gitnote" className="login-gitnote-btn">
-          <BookOpen size={15} />
-          <span>Browse Notes</span>
-        </Link>
 
       </div>
     </div>

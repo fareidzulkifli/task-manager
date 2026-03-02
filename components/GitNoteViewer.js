@@ -5,7 +5,7 @@ import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/atom-one-dark.css'
-import { FileText, Loader2, AlertCircle, Download, ChevronRight, Share2, Check, PanelRight } from 'lucide-react'
+import { FileText, Loader2, AlertCircle, Download, ChevronRight, Share2, Check, PanelRight, Sun, Moon } from 'lucide-react'
 
 const TEXT_EXTENSIONS  = new Set(['md', 'txt', 'js', 'ts', 'jsx', 'tsx', 'py', 'json', 'yaml', 'yml', 'toml', 'sh', 'css', 'html', 'xml', 'csv', 'sql'])
 const DOCX_EXTENSIONS  = new Set(['doc', 'docx'])
@@ -35,7 +35,7 @@ function stripFrontMatter(text) {
 
 marked.setOptions({ gfm: true, breaks: false })
 
-export default function GitNoteViewer({ filePath, onToggleExplorer, explorerVisible }) {
+export default function GitNoteViewer({ filePath, onToggleExplorer, explorerVisible, theme, onToggleTheme }) {
   const [content, setContent]           = useState(null)
   const [rendered, setRendered]         = useState(null) // { type: 'docx'|'excel', html?, sheets? }
   const [activeSheet, setActiveSheet]   = useState(0)
@@ -54,7 +54,7 @@ export default function GitNoteViewer({ filePath, onToggleExplorer, explorerVisi
   }
 
   const filename = filePath?.split('/').pop() || ''
-  const ext      = filename.includes('.') ? filename.split('.').pop().toLowerCase() : 'md'
+  const ext      = filename.includes('.') ? filename.split('.').pop().toLowerCase() : 'txt'
   const isPdf    = ext === 'pdf'
   const isText   = TEXT_EXTENSIONS.has(ext)
   const isDocx   = DOCX_EXTENSIONS.has(ext)
@@ -144,6 +144,11 @@ export default function GitNoteViewer({ filePath, onToggleExplorer, explorerVisi
     return (
       <div className="gitnote-viewer-empty">
         <div className="gn-header-actions" style={{ position: 'absolute', top: '12px', right: '32px' }}>
+          {onToggleTheme && (
+            <button onClick={onToggleTheme} className="share-theme-btn" title="Toggle theme">
+              {theme === 'dark' ? <Sun size={12} /> : <Moon size={12} />}
+            </button>
+          )}
           {onToggleExplorer && (
             <button onClick={onToggleExplorer} className="gn-share-btn gn-desktop-only" title="Toggle Files" style={{ marginLeft: 'auto' }}>
               <PanelRight size={12} />
@@ -170,6 +175,11 @@ export default function GitNoteViewer({ filePath, onToggleExplorer, explorerVisi
             <Download size={12} />
             <span>Download</span>
           </a>
+          {onToggleTheme && (
+            <button onClick={onToggleTheme} className="share-theme-btn" title="Toggle theme">
+              {theme === 'dark' ? <Sun size={12} /> : <Moon size={12} />}
+            </button>
+          )}
           {onToggleExplorer && (
             <button onClick={onToggleExplorer} className="gn-share-btn gn-desktop-only" title="Toggle Files">
               <PanelRight size={12} />

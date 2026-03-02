@@ -1442,6 +1442,56 @@ input::placeholder, textarea::placeholder { color: var(--text-disabled); }
   border-color: #4caf50;
 }
 
+/* share page — topbar */
+.gitnote-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  min-height: 52px;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--gn-border-hi);
+  background: var(--gn-panel);
+}
+
+.gitnote-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.gitnote-brand-icon {
+  width: 22px;
+  height: 22px;
+  background: linear-gradient(135deg, #7C3AED 0%, #C4B5FD 100%);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.gitnote-brand-name {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: -0.01em;
+  color: var(--gn-text-hi);
+}
+
+.gitnote-brand-sep {
+  color: var(--gn-text-3);
+  font-size: 12px;
+  line-height: 1;
+}
+
+.gitnote-brand-sub {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--gn-text-3);
+}
+
 /* share page — public viewer layout */
 .share-body {
   flex: 1;
@@ -1456,20 +1506,66 @@ input::placeholder, textarea::placeholder { color: var(--text-disabled); }
   align-items: center;
   gap: 6px;
   padding: 6px 14px;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--gn-text-2);
-  background: transparent;
-  border: 1px solid var(--gn-border-hi);
+  font-size: 11px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--gn-accent);
+  background: var(--gn-accent-dim);
+  border: 1px solid rgba(74, 144, 217, 0.3);
   border-radius: 6px;
   cursor: pointer;
   text-decoration: none;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
 .share-signin-btn:hover {
+  background: rgba(74, 144, 217, 0.2);
+  color: var(--gn-text-hi);
+  border-color: var(--gn-accent);
+}
+
+/* theme toggle button — sits alongside share/download in viewer header */
+.share-theme-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 5px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  color: var(--gn-text-2);
+  background: transparent;
+  border: 1px solid var(--gn-border-hi);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.share-theme-btn:hover {
   background: var(--gn-hover);
   color: var(--gn-text-hi);
-  border-color: var(--gn-text-3);
+  border-color: var(--gn-border-hi);
+}
+
+/* light theme overrides for share / gitnote page */
+.gitnote-page[data-theme='light'] {
+  --gn-bg:          #f7f7f5;
+  --gn-panel:       #ffffff;
+  --gn-hover:       #f0eeec;
+  --gn-active:      #e8e5e0;
+  --gn-border:      #e0ddd8;
+  --gn-border-hi:   #c8c5c0;
+  --gn-text-hi:     #1a1a1a;
+  --gn-text:        #333333;
+  --gn-text-2:      #666666;
+  --gn-text-3:      #999999;
+  --gn-accent:      #2e7dc8;
+  --gn-accent-dim:  rgba(46, 125, 200, 0.1);
+  --gn-link:        #2e7dc8;
+  --gn-code-bg:     #f0eff0;
+  --gn-code-border: #d8d5d0;
+  --gn-inline-bg:   rgba(0, 0, 0, 0.06);
+  --gn-inline-fg:   #b83838;
+  --gn-shadow:      0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
 /* viewer content */

@@ -123,7 +123,7 @@ export default function Sidebar() {
               <div className="sidebar-logo-icon">
                 <Layers size={14} color="#fff" strokeWidth={3} />
               </div>
-              <span style={{ color: 'var(--text)' }}>Task Manager</span>
+              <span style={{ color: 'var(--text)' }}>Private Workspace</span>
             </Link>
             <button
               className="btn-ghost mobile-close-btn"
@@ -181,7 +181,7 @@ export default function Sidebar() {
         </div>
 
         <div className="nav-section" style={{ marginTop: '24px' }}>
-          <h3 className="nav-section-title" style={{ fontSize: '10px', fontWeight: '800', letterSpacing: '0.15em' }}>WORKSPACE</h3>
+          <h3 className="nav-section-title" style={{ fontSize: '10px', fontWeight: '800', letterSpacing: '0.15em' }}>Task Manager</h3>
           {loading ? (
             <div style={{ padding: '12px', color: 'var(--text-disabled)', fontSize: '10px', fontFamily: 'monospace' }}>FETCHING_NODES...</div>
           ) : (

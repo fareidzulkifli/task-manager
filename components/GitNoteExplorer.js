@@ -242,7 +242,7 @@ export default function GitNoteExplorer({ selectedPath, onSelect }) {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
       <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--gn-border)' }}>
         <div className="gn-search-box">
           <Search size={14} className="gn-search-icon" />

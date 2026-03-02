@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
-import rehypeHighlight from 'rehype-highlight'
+import { useState, useEffect, useRef } from 'react'
+import { marked } from 'marked'
+import DOMPurify from 'dompurify'
+import hljs from 'highlight.js'
 import 'highlight.js/styles/atom-one-dark.css'
 import { FileText, Loader2, AlertCircle, Download, ChevronRight, Share2, Check, PanelRight } from 'lucide-react'
 
@@ -33,13 +33,17 @@ function stripFrontMatter(text) {
   return match ? text.slice(match[0].length) : text
 }
 
+marked.setOptions({ gfm: true, breaks: false })
+
 export default function GitNoteViewer({ filePath, onToggleExplorer, explorerVisible }) {
-  const [content, setContent]       = useState(null)
-  const [rendered, setRendered]     = useState(null) // { type: 'docx'|'excel', html?, sheets? }
-  const [activeSheet, setActiveSheet] = useState(0)
-  const [loading, setLoading]       = useState(false)
-  const [error, setError]           = useState(null)
-  const [copied, setCopied]         = useState(false)
+  const [content, setContent]           = useState(null)
+  const [rendered, setRendered]         = useState(null) // { type: 'docx'|'excel', html?, sheets? }
+  const [activeSheet, setActiveSheet]   = useState(0)
+  const [loading, setLoading]           = useState(false)
+  const [error, setError]               = useState(null)
+  const [copied, setCopied]             = useState(false)
+  const [markdownHtml, setMarkdownHtml] = useState('')
+  const markdownRef                     = useRef(null)
 
   const handleShare = () => {
     const url = window.location.origin + '/share/' + filePath
@@ -56,6 +60,27 @@ export default function GitNoteViewer({ filePath, onToggleExplorer, explorerVisi
   const isDocx   = DOCX_EXTENSIONS.has(ext)
   const isExcel  = EXCEL_EXTENSIONS.has(ext)
   const rawUrl   = filePath ? `/api/gitnote/raw?path=${encodeURIComponent(filePath)}` : null
+
+  useEffect(() => {
+    if (content === null || ext !== 'md') {
+      setMarkdownHtml('')
+      return
+    }
+    const raw = stripFrontMatter(content)
+    const html = marked.parse(raw)
+    const clean = typeof window !== 'undefined'
+      ? DOMPurify.sanitize(html)
+      : html
+    setMarkdownHtml(clean)
+  }, [content, ext])
+
+  useEffect(() => {
+    if (!markdownRef.current || !markdownHtml) return
+    markdownRef.current.querySelectorAll('pre code').forEach(block => {
+      delete block.dataset.highlighted
+      hljs.highlightElement(block)
+    })
+  }, [markdownHtml])
 
   useEffect(() => {
     if (!filePath || isPdf) {
@@ -176,15 +201,12 @@ export default function GitNoteViewer({ filePath, onToggleExplorer, explorerVisi
         )}
 
         {/* Markdown */}
-        {!isPdf && !loading && !error && content !== null && ext === 'md' && (
-          <div className="markdown-body">
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
-              rehypePlugins={[[rehypeHighlight, { detect: true, ignoreMissing: true }]]}
-            >
-              {stripFrontMatter(content)}
-            </ReactMarkdown>
-          </div>
+        {!isPdf && !loading && !error && markdownHtml && (
+          <div
+            className="markdown-body"
+            ref={markdownRef}
+            dangerouslySetInnerHTML={{ __html: markdownHtml }}
+          />
         )}
 
         {/* Plain text / code */}

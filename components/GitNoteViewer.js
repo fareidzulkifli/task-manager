@@ -5,7 +5,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeHighlight from 'rehype-highlight'
 import 'highlight.js/styles/atom-one-dark.css'
-import { FileText, Loader2, AlertCircle, Download, ChevronRight, Share2, Check } from 'lucide-react'
+import { FileText, Loader2, AlertCircle, Download, ChevronRight, Share2, Check, PanelRight } from 'lucide-react'
 
 const TEXT_EXTENSIONS = new Set(['md', 'txt', 'js', 'ts', 'jsx', 'tsx', 'py', 'json', 'yaml', 'yml', 'toml', 'sh', 'css', 'html', 'xml', 'csv', 'sql'])
 
@@ -32,7 +32,7 @@ function stripFrontMatter(text) {
   return match ? text.slice(match[0].length) : text
 }
 
-export default function GitNoteViewer({ filePath }) {
+export default function GitNoteViewer({ filePath, onToggleExplorer, explorerVisible }) {
   const [content, setContent] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -76,6 +76,14 @@ export default function GitNoteViewer({ filePath }) {
   if (!filePath) {
     return (
       <div className="gitnote-viewer-empty">
+        <div className="gn-header-actions" style={{ position: 'absolute', top: '12px', right: '32px' }}>
+          {onToggleExplorer && (
+            <button onClick={onToggleExplorer} className="gn-share-btn gn-desktop-only" title="Toggle Files" style={{ marginLeft: 'auto' }}>
+              <PanelRight size={12} />
+              <span>{explorerVisible ? 'Hide Files' : 'Show Files'}</span>
+            </button>
+          )}
+        </div>
         <FileText size={36} className="gn-empty-icon" />
         <p className="gn-empty-text">Select a file to view it</p>
       </div>
@@ -95,6 +103,12 @@ export default function GitNoteViewer({ filePath }) {
             <Download size={12} />
             <span>Download</span>
           </a>
+          {onToggleExplorer && (
+            <button onClick={onToggleExplorer} className="gn-share-btn gn-desktop-only" title="Toggle Files">
+              <PanelRight size={12} />
+              <span>{explorerVisible ? 'Hide Files' : 'Show Files'}</span>
+            </button>
+          )}
         </div>
       </div>
 

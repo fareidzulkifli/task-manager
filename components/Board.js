@@ -15,7 +15,7 @@ import {
   Zap,
   History,
   RefreshCcw,
-  Menu
+  PanelLeft
 } from 'lucide-react'
 
 // Priority score: urgent+important(0) > urgent(1) > important(2) > none(3)
@@ -210,7 +210,7 @@ export default function Board({ orgId }) {
             onClick={handleToggleSidebar}
             style={{ display: 'none', padding: '8px' }}
           >
-            <Menu size={20} />
+            <PanelLeft size={20} />
           </button>
 
           <div className="board-title-group" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>

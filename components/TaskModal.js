@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   X,
   FileText,
@@ -28,12 +28,22 @@ export default function TaskModal({ task, onClose, onTaskUpdated, onTaskPatch, p
   const [attachments, setAttachments] = useState([])
   const [uploadingFile, setUploadingFile] = useState(false)
 
+  const summaryRef = useRef(null)
+
   useEffect(() => {
     if (task) {
       setEditedTask(task)
       fetchAttachments()
     }
   }, [task])
+
+  useEffect(() => {
+    // Initial resize if needed
+    if (summaryRef.current) {
+      summaryRef.current.style.height = 'auto';
+      summaryRef.current.style.height = `${summaryRef.current.scrollHeight}px`;
+    }
+  }, [editedTask.summary])
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth <= 768)
@@ -323,11 +333,17 @@ export default function TaskModal({ task, onClose, onTaskUpdated, onTaskPatch, p
             display: (isMobile && activeTab === 'details') ? 'none' : 'flex'
           }}>
             {/* Title (Always visible in Main Content) */}
-            <input
+            <textarea
+              ref={summaryRef}
               value={editedTask.summary}
-              onChange={e => setEditedTask({ ...editedTask, summary: e.target.value })}
+              onChange={e => {
+                setEditedTask({ ...editedTask, summary: e.target.value });
+                e.target.style.height = 'auto';
+                e.target.style.height = `${e.target.scrollHeight}px`;
+              }}
               onBlur={() => handleSave()}
               placeholder="Task summary"
+              rows={1}
               style={{
                 fontSize: isMobile ? '20px' : '26px',
                 fontWeight: '700',
@@ -338,7 +354,10 @@ export default function TaskModal({ task, onClose, onTaskUpdated, onTaskPatch, p
                 letterSpacing: '-0.03em',
                 color: 'var(--text)',
                 width: '100%',
-                flexShrink: 0
+                flexShrink: 0,
+                resize: 'none',
+                overflow: 'hidden',
+                lineHeight: '1.3',
               }}
             />
 

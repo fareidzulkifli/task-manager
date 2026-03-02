@@ -753,7 +753,7 @@ function TaskRow({ task, onTaskClick, onTaskPatch, isExpanded, onToggleExpand })
               minHeight: '44px',
               cursor: 'pointer',
             }}
-            className="task-row-grid"
+            className={`task-row-grid ${isExpanded ? 'is-expanded' : ''}`}
             onClick={onToggleExpand}
           >
             {/* Status */}

@@ -814,6 +814,15 @@ input::placeholder, textarea::placeholder { color: var(--text-disabled); }
     line-height: 1.2 !important;
   }
 
+  /* Two-line expansion when task is expanded */
+  .task-row-grid.is-expanded > div:nth-child(2) span {
+    white-space: normal !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    line-height: 1.4 !important;
+  }
+
   /* Priority pills — ultra-compact */
   .task-row-grid > div:nth-child(3) { gap: 2px !important; }
   .task-row-grid > div:nth-child(3) button {
@@ -878,7 +887,7 @@ input::placeholder, textarea::placeholder { color: var(--text-disabled); }
     min-height: auto !important;
   }
 
-  .modal-overlay input[placeholder="Task summary"] {
+  .modal-overlay textarea[placeholder="Task summary"] {
     font-size: 20px !important;
     margin-bottom: 10px !important;
   }
@@ -1104,7 +1113,7 @@ input::placeholder, textarea::placeholder { color: var(--text-disabled); }
 .gitnote-explorer {
   width: 260px;
   flex-shrink: 0;
-  border-right: 1px solid var(--gn-border);
+  border-left: 1px solid var(--gn-border);
   overflow-y: auto;
   background: var(--gn-panel);
   display: flex;
@@ -1363,6 +1372,12 @@ input::placeholder, textarea::placeholder { color: var(--text-disabled); }
 /* ── Mobile & Desktop Visibility ── */
 .gn-mobile-only {
   display: none !important;
+}
+
+@media (min-width: 769px) {
+  .desktop-hidden {
+    display: none !important;
+  }
 }
 
 /* ── Mobile ── */

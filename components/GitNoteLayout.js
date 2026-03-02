@@ -12,6 +12,7 @@ export default function GitNoteLayout({ initialPath }) {
     initialPath && initialPath.length > 0 ? initialPath.join('/') : null
   )
   const [explorerOpen, setExplorerOpen] = useState(false)
+  const [desktopExplorerOpen, setDesktopExplorerOpen] = useState(true)
   const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
@@ -58,14 +59,18 @@ export default function GitNoteLayout({ initialPath }) {
           <div className="sidebar-backdrop open gn-mobile-only" onClick={() => setExplorerOpen(false)} />
         )}
 
-        <aside className={`gitnote-explorer ${explorerOpen ? 'mobile-open' : 'mobile-hidden'}`}>
+        <GitNoteViewer 
+          filePath={selectedPath} 
+          onToggleExplorer={() => setDesktopExplorerOpen(o => !o)}
+          explorerVisible={desktopExplorerOpen}
+        />
+
+        <aside className={`gitnote-explorer ${explorerOpen ? 'mobile-open' : 'mobile-hidden'} ${desktopExplorerOpen ? '' : 'desktop-hidden'}`}>
           <div className="gitnote-explorer-header">
             <span className="gitnote-explorer-label">Files</span>
           </div>
           <GitNoteExplorer selectedPath={selectedPath} onSelect={handleSelect} />
         </aside>
-
-        <GitNoteViewer filePath={selectedPath} />
       </div>
     </div>
   )

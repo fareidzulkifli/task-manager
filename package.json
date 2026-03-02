@@ -16,6 +16,7 @@
     "cookie-parser": "^1.4.7",
     "highlight.js": "^11.11.1",
     "lucide-react": "^0.574.0",
+    "mammoth": "^1.11.0",
     "next": "16.1.6",
     "pg": "^8.18.0",
     "react": "19.2.3",
@@ -23,7 +24,8 @@
     "react-markdown": "^10.1.0",
     "rehype-highlight": "^7.0.2",
     "remark-gfm": "^4.0.1",
-    "uuid": "^13.0.0"
+    "uuid": "^13.0.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "eslint": "^9",

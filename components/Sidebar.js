@@ -25,6 +25,7 @@ export default function Sidebar() {
   const [loading, setLoading] = useState(true)
   const [theme, setTheme] = useState('dark')
   const [isMobileOpen, setIsMobileOpen] = useState(false)
+  const [isCollapsed, setIsCollapsed] = useState(false)
   const params = useParams()
   const pathname = usePathname()
   const currentOrgSlug = params?.slug
@@ -48,6 +49,7 @@ export default function Sidebar() {
     const savedTheme = localStorage.getItem('theme') || 'dark'
     setTheme(savedTheme)
     document.documentElement.setAttribute('data-theme', savedTheme)
+    setIsCollapsed(localStorage.getItem('sidebar-collapsed') === 'true')
   }, [])
 
   const toggleTheme = () => {
@@ -112,35 +114,48 @@ export default function Sidebar() {
       />
 
       <aside
-        className={`sidebar ${isMobileOpen ? 'mobile-open' : ''}`}
+        className={`sidebar ${isMobileOpen ? 'mobile-open' : ''} ${isCollapsed ? 'collapsed' : ''}`}
         style={{ background: 'var(--surface)' }}
       >
         <div className="sidebar-header">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: isCollapsed ? 'center' : 'space-between' }}>
             <Link href="/task/dashboard" className="sidebar-logo">
               <div className="sidebar-logo-icon">
                 <Layers size={14} color="#fff" strokeWidth={3} />
               </div>
               <span style={{ color: 'var(--text)' }}>Task Manager</span>
             </Link>
-            <button 
+            <button
               className="btn-ghost mobile-close-btn"
-              onClick={() => setIsMobileOpen(false)}
+              onClick={() => {
+                if (window.innerWidth <= 768) {
+                  setIsMobileOpen(false)
+                } else {
+                  setIsCollapsed(prev => {
+                    const next = !prev
+                    localStorage.setItem('sidebar-collapsed', String(next))
+                    return next
+                  })
+                }
+              }}
               style={{ padding: '4px' }}
+              title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             >
-              <ChevronRight size={18} style={{ transform: 'rotate(180deg)' }} />
+              <ChevronRight size={18} style={{ transform: (isMobileOpen || !isCollapsed) ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.25s' }} />
             </button>
           </div>
           
           <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
-          <button
-            onClick={handleCreateOrg}
-            className="btn-ghost"
-            style={{ flexGrow: 1, justifyContent: 'flex-start', padding: '8px 12px', fontSize: '11px', fontWeight: '700', fontFamily: 'monospace' }}
-          >
-            <Plus size={14} />
-            <span>Create ORG</span>
-          </button>
+          {!isCollapsed && (
+            <button
+              onClick={handleCreateOrg}
+              className="btn-ghost"
+              style={{ flexGrow: 1, justifyContent: 'flex-start', padding: '8px 12px', fontSize: '11px', fontWeight: '700', fontFamily: 'monospace' }}
+            >
+              <Plus size={14} />
+              <span>Create ORG</span>
+            </button>
+          )}
           
           <button
             onClick={toggleTheme}

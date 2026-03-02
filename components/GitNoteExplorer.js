@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Folder, FolderOpen, FileText, File, Loader2, AlertCircle } from 'lucide-react'
+import { Folder, FolderOpen, FileText, File, Loader2, AlertCircle, FileCode, FileImage, FileSpreadsheet, FileArchive, FileAudio, FileVideo, FileType, Search } from 'lucide-react'
 
 function isHidden(filePath) {
   const segments = filePath.split('/')
@@ -30,10 +30,61 @@ function buildTree(files) {
 }
 
 function getFileIcon(name) {
-  const ext = name.includes('.') ? name.split('.').pop().toLowerCase() : 'md'
-  if (ext === 'md') return <FileText size={13} className="gn-icon-md" />
-  if (ext === 'pdf') return <File size={13} className="gn-icon-pdf" />
-  return <File size={13} className="gn-icon-file" />
+  const ext = name.includes('.') ? name.split('.').pop().toLowerCase() : ''
+  switch (ext) {
+    case 'md':
+    case 'txt':
+      return <FileText size={13} className="gn-icon-md" />
+    case 'doc':
+    case 'docx':
+    case 'rtf':
+      return <FileType size={13} className="gn-icon-doc" />
+    case 'js':
+    case 'jsx':
+    case 'ts':
+    case 'tsx':
+    case 'json':
+    case 'html':
+    case 'css':
+    case 'py':
+    case 'java':
+    case 'c':
+    case 'cpp':
+    case 'go':
+    case 'rs':
+      return <FileCode size={13} className="gn-icon-code" />
+    case 'png':
+    case 'jpg':
+    case 'jpeg':
+    case 'gif':
+    case 'svg':
+    case 'webp':
+    case 'ico':
+      return <FileImage size={13} className="gn-icon-image" />
+    case 'csv':
+    case 'xls':
+    case 'xlsx':
+    case 'xlxs':
+      return <FileSpreadsheet size={13} className="gn-icon-spreadsheet" />
+    case 'zip':
+    case 'tar':
+    case 'gz':
+    case 'rar':
+    case '7z':
+      return <FileArchive size={13} className="gn-icon-archive" />
+    case 'mp3':
+    case 'wav':
+    case 'ogg':
+      return <FileAudio size={13} className="gn-icon-audio" />
+    case 'mp4':
+    case 'webm':
+    case 'mov':
+      return <FileVideo size={13} className="gn-icon-video" />
+    case 'pdf':
+      return <File size={13} className="gn-icon-pdf" />
+    default:
+      return <File size={13} className="gn-icon-file" />
+  }
 }
 
 function TreeNode({ name, node, depth, selectedPath, onSelect, defaultOpen }) {
@@ -92,15 +143,19 @@ function TreeNode({ name, node, depth, selectedPath, onSelect, defaultOpen }) {
 }
 
 export default function GitNoteExplorer({ selectedPath, onSelect }) {
+  const [rawFiles, setRawFiles] = useState(null)
   const [tree, setTree] = useState(null)
   const [error, setError] = useState(null)
+  const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
     fetch('/api/gitnote/tree')
       .then(r => r.json())
       .then(data => {
         if (data.error) throw new Error(data.error)
-        setTree(buildTree(data.tree.filter(f => !isHidden(f.path))))
+        const files = data.tree.filter(f => !isHidden(f.path))
+        setRawFiles(files)
+        setTree(buildTree(files))
       })
       .catch(err => setError(err.message))
   }, [])
@@ -114,7 +169,7 @@ export default function GitNoteExplorer({ selectedPath, onSelect }) {
     )
   }
 
-  if (!tree) {
+  if (!rawFiles || !tree) {
     return (
       <div className="gn-state-msg">
         <Loader2 size={14} className="animate-spin" />
@@ -123,24 +178,86 @@ export default function GitNoteExplorer({ selectedPath, onSelect }) {
     )
   }
 
+  let content = null
+
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase()
+    const matches = rawFiles.filter(f => {
+      const name = f.path.split('/').pop().toLowerCase()
+      const ext = name.includes('.') ? name.split('.').pop() : ''
+      // Only search inside .txt, .docx, .md, .pdf as requested
+      const isSearchableType = ['txt', 'docx', 'md', 'pdf'].includes(ext)
+      if (!isSearchableType) return false
+      return name.includes(q)
+    })
+
+    content = (
+      <div className="gitnote-search-results">
+        {matches.map(f => {
+          const name = f.path.split('/').pop()
+          return (
+            <div
+              key={f.path}
+              className={`gitnote-tree-item ${selectedPath === f.path ? 'selected' : ''}`}
+              style={{ paddingLeft: '14px', alignItems: 'flex-start', padding: '8px 14px' }}
+              onClick={() => onSelect(f.path)}
+              title={f.path}
+            >
+              <div style={{ marginTop: '2px' }}>{getFileIcon(name)}</div>
+              <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', marginLeft: '6px' }}>
+                <span className="gitnote-tree-label" style={{ fontSize: '13px' }}>{decodeURIComponent(name)}</span>
+                <span style={{ fontSize: '11px', color: 'var(--gn-text-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {decodeURIComponent(f.path)}
+                </span>
+              </div>
+            </div>
+          )
+        })}
+        {matches.length === 0 && (
+          <div className="gn-state-msg">No matching documents found.</div>
+        )}
+      </div>
+    )
+  } else {
+    content = (
+      <div className="gitnote-tree-root">
+        {Object.entries(tree)
+          .sort(([, a], [, b]) => {
+            if (a.__type === b.__type) return 0
+            return a.__type === 'folder' ? -1 : 1
+          })
+          .map(([name, node]) => (
+            <TreeNode
+              key={name}
+              name={name}
+              node={node}
+              depth={0}
+              selectedPath={selectedPath}
+              onSelect={onSelect}
+              defaultOpen={true}
+            />
+          ))}
+      </div>
+    )
+  }
+
   return (
-    <div className="gitnote-tree-root">
-      {Object.entries(tree)
-        .sort(([, a], [, b]) => {
-          if (a.__type === b.__type) return 0
-          return a.__type === 'folder' ? -1 : 1
-        })
-        .map(([name, node]) => (
-          <TreeNode
-            key={name}
-            name={name}
-            node={node}
-            depth={0}
-            selectedPath={selectedPath}
-            onSelect={onSelect}
-            defaultOpen={true}
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--gn-border)' }}>
+        <div className="gn-search-box">
+          <Search size={14} className="gn-search-icon" />
+          <input 
+            type="text" 
+            placeholder="Search .md, .pdf, .docx..." 
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="gn-search-input"
           />
-        ))}
+        </div>
+      </div>
+      <div style={{ flex: 1, overflowY: 'auto' }}>
+        {content}
+      </div>
     </div>
   )
 }

@@ -592,7 +592,7 @@ function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewComplete
                 className="btn-ghost"
                 style={{ fontSize: '12px', padding: '8px 16px' }}
               >
-                Abort
+                Cancel
               </button>
               <button
                 onClick={handleCreateTask}
@@ -601,7 +601,7 @@ function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewComplete
                 style={{ fontSize: '12px', padding: '8px 20px', gap: '8px' }}
               >
                 {loading ? <Loader2 size={14} className="animate-spin" /> : <ArrowRight size={14} />}
-                Allocate Task
+                Create Task
               </button>
             </div>
           </div>

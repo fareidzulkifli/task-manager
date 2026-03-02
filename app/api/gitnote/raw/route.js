@@ -13,6 +13,11 @@ const CONTENT_TYPES = {
   json: 'application/json; charset=utf-8',
   html: 'text/html; charset=utf-8',
   css:  'text/css; charset=utf-8',
+  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  doc:  'application/msword',
+  xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  xlxs: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  xls:  'application/vnd.ms-excel',
 }
 
 export async function GET(request) {

@@ -1,19 +1,20 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, useRef } from 'react'
 import { LayoutDashboard, Menu, X } from 'lucide-react'
 import GitNoteExplorer from './GitNoteExplorer'
 import GitNoteViewer from './GitNoteViewer'
 
 export default function GitNoteLayout({ initialPath }) {
-  const router = useRouter()
   const [selectedPath, setSelectedPath] = useState(
     initialPath && initialPath.length > 0 ? initialPath.join('/') : null
   )
   const [explorerOpen, setExplorerOpen] = useState(false)
   const [desktopExplorerOpen, setDesktopExplorerOpen] = useState(true)
   const [isMobile, setIsMobile] = useState(false)
+  
+  const [explorerWidth, setExplorerWidth] = useState(300)
+  const [isResizing, setIsResizing] = useState(false)
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth <= 768)
@@ -22,15 +23,52 @@ export default function GitNoteLayout({ initialPath }) {
     return () => window.removeEventListener('resize', check)
   }, [])
 
+  // Sync on initial load only — subsequent selections use pushState, not router
   useEffect(() => {
     const path = initialPath && initialPath.length > 0 ? initialPath.join('/') : null
     setSelectedPath(path)
-  }, [initialPath?.join('/')])
+  }, [])
+
+  // Handle browser back/forward
+  useEffect(() => {
+    const handlePop = () => {
+      const raw = window.location.pathname.replace(/^\/gitnote\/?/, '')
+      setSelectedPath(raw || null)
+    }
+    window.addEventListener('popstate', handlePop)
+    return () => window.removeEventListener('popstate', handlePop)
+  }, [])
+
+  useEffect(() => {
+    if (!isResizing) return
+    const handleMouseMove = (e) => {
+      const newWidth = document.body.clientWidth - e.clientX
+      if (newWidth > 150 && newWidth < 600) {
+        setExplorerWidth(newWidth)
+      }
+    }
+    const handleMouseUp = () => {
+      setIsResizing(false)
+      document.body.style.cursor = 'default'
+    }
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [isResizing])
 
   const handleSelect = (path) => {
     setSelectedPath(path)
-    router.push('/gitnote/' + path)
+    window.history.pushState(null, '', '/gitnote/' + path)
     if (isMobile) setExplorerOpen(false)
+  }
+
+  const handleMouseDown = (e) => {
+    e.preventDefault()
+    setIsResizing(true)
+    document.body.style.cursor = 'ew-resize'
   }
 
   return (
@@ -65,7 +103,16 @@ export default function GitNoteLayout({ initialPath }) {
           explorerVisible={desktopExplorerOpen}
         />
 
-        <aside className={`gitnote-explorer ${explorerOpen ? 'mobile-open' : 'mobile-hidden'} ${desktopExplorerOpen ? '' : 'desktop-hidden'}`}>
+        <aside 
+          className={`gitnote-explorer ${explorerOpen ? 'mobile-open' : 'mobile-hidden'} ${desktopExplorerOpen ? '' : 'desktop-hidden'}`}
+          style={!isMobile ? { width: `${explorerWidth}px` } : undefined}
+        >
+          {!isMobile && (
+            <div 
+              className="gitnote-explorer-resizer"
+              onMouseDown={handleMouseDown}
+            />
+          )}
           <div className="gitnote-explorer-header">
             <span className="gitnote-explorer-label">Files</span>
           </div>

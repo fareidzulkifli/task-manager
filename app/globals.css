@@ -1826,6 +1826,7 @@ input::placeholder, textarea::placeholder { color: var(--text-disabled); }
 
 /* ── Code blocks ── */
 .markdown-body pre {
+  position: relative;
   margin: 1.3em 0;
   border-radius: 8px;
   border: 1px solid var(--gn-code-border);
@@ -1844,6 +1845,36 @@ input::placeholder, textarea::placeholder { color: var(--text-disabled); }
   border-radius: 0;
   border: none;
   color: var(--gn-text);
+}
+
+.gn-copy-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  color: var(--gn-text-2);
+  background: var(--gn-panel);
+  border: 1px solid var(--gn-border-hi);
+  border-radius: 4px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s, color 0.15s;
+  z-index: 1;
+}
+.markdown-body pre:hover .gn-copy-btn {
+  opacity: 1;
+}
+.gn-copy-btn:hover {
+  background: var(--gn-hover);
+  color: var(--gn-text-hi);
+}
+.gn-copy-btn.copied {
+  color: var(--gn-accent);
+  border-color: var(--gn-accent);
+  opacity: 1;
 }
 
 [data-theme='light'] .markdown-body :not(pre) > code {

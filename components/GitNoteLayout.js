@@ -13,6 +13,7 @@ export default function GitNoteLayout({ initialPath }) {
   const [desktopExplorerOpen, setDesktopExplorerOpen] = useState(true)
   const [isMobile, setIsMobile] = useState(false)
   
+  const [theme, setTheme] = useState('light')
   const [explorerWidth, setExplorerWidth] = useState(300)
   const [isResizing, setIsResizing] = useState(false)
 
@@ -72,7 +73,7 @@ export default function GitNoteLayout({ initialPath }) {
   }
 
   return (
-    <div className="gitnote-page">
+    <div className="gitnote-page" data-theme={theme}>
       {/* Mobile-only bar: open app sidebar + toggle file explorer */}
       <div className="gitnote-mobile-bar">
         <button
@@ -97,10 +98,12 @@ export default function GitNoteLayout({ initialPath }) {
           <div className="sidebar-backdrop open gn-mobile-only" onClick={() => setExplorerOpen(false)} />
         )}
 
-        <GitNoteViewer 
-          filePath={selectedPath} 
+        <GitNoteViewer
+          filePath={selectedPath}
           onToggleExplorer={() => setDesktopExplorerOpen(o => !o)}
           explorerVisible={desktopExplorerOpen}
+          theme={theme}
+          onToggleTheme={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
         />
 
         <aside 

@@ -79,6 +79,25 @@ export default function GitNoteViewer({ filePath, onToggleExplorer, explorerVisi
     markdownRef.current.querySelectorAll('pre code').forEach(block => {
       delete block.dataset.highlighted
       hljs.highlightElement(block)
+
+      const pre = block.parentElement
+      if (pre && !pre.querySelector('.gn-copy-btn')) {
+        const btn = document.createElement('button')
+        btn.className = 'gn-copy-btn'
+        btn.title = 'Copy code'
+        btn.textContent = 'Copy'
+        btn.addEventListener('click', () => {
+          navigator.clipboard.writeText(block.textContent).then(() => {
+            btn.textContent = 'Copied!'
+            btn.classList.add('copied')
+            setTimeout(() => {
+              btn.textContent = 'Copy'
+              btn.classList.remove('copied')
+            }, 2000)
+          })
+        })
+        pre.appendChild(btn)
+      }
     })
   }, [markdownHtml])
 

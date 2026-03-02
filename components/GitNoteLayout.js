@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { BookOpen, LayoutDashboard, Menu, X } from 'lucide-react'
+import { LayoutDashboard, Menu, X } from 'lucide-react'
 import GitNoteExplorer from './GitNoteExplorer'
 import GitNoteViewer from './GitNoteViewer'
 
@@ -35,36 +34,24 @@ export default function GitNoteLayout({ initialPath }) {
 
   return (
     <div className="gitnote-page">
-      <header className="gitnote-topbar">
-        <div className="gitnote-topbar-left">
-          <button 
-            className="gitnote-icon-btn gn-mobile-only" 
-            onClick={() => window.dispatchEvent(new Event('toggle-sidebar'))}
-            title="Open App Menu"
-          >
-            <LayoutDashboard size={16} />
-          </button>
-          
-          <button 
-            className="gitnote-icon-btn gn-mobile-only" 
-            onClick={() => setExplorerOpen(o => !o)} 
-            title="Toggle Explorer"
-          >
-            {explorerOpen ? <X size={16} /> : <Menu size={16} />}
-          </button>
-          
-          <div className="gitnote-brand">
-            <BookOpen size={15} className="gitnote-brand-icon" />
-            <span className="gitnote-brand-name">BA Notes</span>
-            <span className="gitnote-brand-sub">fareidzulkifli</span>
-          </div>
-        </div>
-
-        <Link href="/task/dashboard" className="gitnote-back-btn gn-desktop-only">
-          <LayoutDashboard size={13} />
-          <span>Back to App</span>
-        </Link>
-      </header>
+      {/* Mobile-only bar: open app sidebar + toggle file explorer */}
+      <div className="gitnote-mobile-bar">
+        <button
+          className="gitnote-icon-btn"
+          onClick={() => window.dispatchEvent(new Event('toggle-sidebar'))}
+          title="Open App Menu"
+        >
+          <LayoutDashboard size={18} />
+        </button>
+        <span className="gitnote-mobile-title">BA Notes</span>
+        <button
+          className="gitnote-icon-btn"
+          onClick={() => setExplorerOpen(o => !o)}
+          title="Toggle Files"
+        >
+          {explorerOpen ? <X size={18} /> : <Menu size={18} />}
+        </button>
+      </div>
 
       <div className="gitnote-body">
         {explorerOpen && (

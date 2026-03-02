@@ -45,12 +45,12 @@ export default function Home() {
 
   return (
     <div className="dashboard-container animate-fade-in">
-      <header className="dashboard-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
+      <header className="dashboard-header">
+        <div className="dashboard-header-left">
           <button
             className="mobile-menu-btn btn-ghost"
             onClick={() => window.dispatchEvent(new Event('toggle-sidebar'))}
-            style={{ display: 'none', padding: '8px', marginTop: '4px' }}
+            style={{ display: 'none' }}
           >
             <Menu size={20} />
           </button>
@@ -59,7 +59,7 @@ export default function Home() {
             <p className="dashboard-subtitle">Overview of your most recently active projects</p>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: '12px' }}>
+        <div className="dashboard-badge">
           <div className="badge" style={{ padding: '6px 12px', background: 'var(--surface-alt)', border: '1px solid var(--border)' }}>
             <TrendingUp size={14} style={{ marginRight: '6px' }} />
             Active Productivity

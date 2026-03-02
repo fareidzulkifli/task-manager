@@ -387,12 +387,6 @@ input::placeholder, textarea::placeholder { color: var(--text-disabled); }
   z-index: 40;
 }
 
-/* Hide sidebar on desktop for full-screen modules like GitNote */
-@media (min-width: 769px) {
-  .sidebar-hidden-desktop {
-    display: none !important;
-  }
-}
 
 .sidebar-header {
   padding: 24px 20px;
@@ -902,6 +896,103 @@ input::placeholder, textarea::placeholder { color: var(--text-disabled); }
     background: var(--background) !important;
     overflow: visible !important;
   }
+
+  /* 9. Dashboard */
+  .dashboard-container {
+    padding: 68px 16px 32px;
+  }
+
+  .dashboard-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 52px;
+    margin-bottom: 0;
+    padding: 0 16px;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    z-index: 50;
+    gap: 0;
+  }
+
+  .dashboard-header-left {
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .dashboard-title {
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    font-family: monospace !important;
+    letter-spacing: 0.08em !important;
+    text-transform: uppercase;
+    -webkit-text-fill-color: var(--text) !important;
+    background: none !important;
+  }
+
+  .dashboard-subtitle { display: none; }
+  .dashboard-badge    { display: none; }
+
+  .project-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+/* =====================================================================
+   DASHBOARD
+   ===================================================================== */
+
+.dashboard-container {
+  padding: 40px;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 40px;
+  gap: 16px;
+}
+
+.dashboard-header-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.dashboard-subtitle {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.project-card {
+  display: block;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  color: var(--text);
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.project-card:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-alt);
+  color: var(--text);
 }
 
 /* =====================================================================
@@ -942,92 +1033,63 @@ input::placeholder, textarea::placeholder { color: var(--text-disabled); }
 
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  flex: 1;
+  min-height: 0;
   background: var(--gn-bg);
   color: var(--gn-text);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
 }
 
-/* ── Top bar ── */
-.gitnote-topbar {
-  height: 52px;
-  display: flex;
+/* ── Mobile bar (app menu + explorer toggle, hidden on desktop) ── */
+.gitnote-mobile-bar {
+  display: none;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 18px;
-  border-bottom: 1px solid var(--gn-border);
+  gap: 4px;
+  height: 44px;
+  padding: 0 8px;
+  border-bottom: 1px solid var(--gn-border-hi);
   background: var(--gn-panel);
   flex-shrink: 0;
-  position: sticky;
-  top: 0;
-  z-index: 10;
 }
 
-.gitnote-topbar-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.gitnote-brand {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.gitnote-brand-icon { color: var(--gn-accent); }
-
-.gitnote-brand-name {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--gn-text-hi);
-  letter-spacing: -0.01em;
-}
-
-.gitnote-brand-sub {
+.gitnote-mobile-title {
+  flex: 1;
+  text-align: center;
   font-size: 12px;
-  color: var(--gn-text-3);
-  padding-left: 2px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--gn-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.gitnote-brand-sub::before { content: '/ '; }
 
 .gitnote-icon-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   border-radius: 6px;
-  border: none;
-  background: transparent;
-  color: var(--gn-text-hi) !important;
+  border: 1px solid #404040;
+  background: #2a2a2a;
+  color: #e0e0e0 !important;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition: background 0.15s;
+}
+.gitnote-icon-btn svg {
+  stroke: #e0e0e0;
+  fill: none;
+  flex-shrink: 0;
 }
 .gitnote-icon-btn:hover {
-  background: var(--gn-hover);
-  color: var(--gn-text-hi) !important;
+  background: #333333;
+  color: #f0f0f0 !important;
+  transform: none;
+  box-shadow: none;
 }
-
-.gitnote-back-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 12px;
-  border-radius: 6px;
-  border: 1px solid var(--gn-border-hi);
-  background: transparent;
-  color: var(--gn-text-2);
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  text-decoration: none;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
-}
-.gitnote-back-btn:hover {
-  background: var(--gn-hover);
-  color: var(--gn-text-hi);
-  border-color: var(--gn-text-3);
+.gitnote-icon-btn:hover svg {
+  stroke: #f0f0f0;
 }
 
 /* ── Body layout ── */
@@ -1035,7 +1097,7 @@ input::placeholder, textarea::placeholder { color: var(--text-disabled); }
   display: flex;
   flex: 1;
   overflow: hidden;
-  height: calc(100vh - 52px);
+  min-height: 0;
 }
 
 /* ── Explorer ── */
@@ -1147,7 +1209,7 @@ input::placeholder, textarea::placeholder { color: var(--text-disabled); }
   align-items: center;
   justify-content: space-between;
   padding: 0 32px;
-  border-bottom: 1px solid var(--gn-border);
+  border-bottom: 1px solid var(--gn-border-hi);
   background: var(--gn-panel);
   position: sticky;
   top: 0;
@@ -1279,7 +1341,7 @@ input::placeholder, textarea::placeholder { color: var(--text-disabled); }
 
 .gitnote-pdf-frame {
   width: 100%;
-  height: calc(100vh - 108px);
+  height: calc(100vh - 44px);
   border: none;
   border-radius: 6px;
 }
@@ -1315,21 +1377,31 @@ input::placeholder, textarea::placeholder { color: var(--text-disabled); }
     display: none !important;
   }
 
+  .gitnote-mobile-bar {
+    display: flex;
+  }
+
   .gitnote-explorer {
     position: fixed;
-    top: 52px;
-    left: 0;
-    height: calc(100vh - 52px);
+    top: 44px;
+    right: 0;
+    left: auto;
+    height: calc(100vh - 44px);
     z-index: 1001;
-    transform: translateX(-100%);
+    transform: translateX(100%);
     transition: transform 0.22s ease;
     box-shadow: var(--gn-shadow);
     width: 82vw;
     max-width: 300px;
   }
   .gitnote-explorer.mobile-open { transform: translateX(0); }
+  .gitnote-viewer-header { padding: 0 16px; }
   .gitnote-viewer-content { padding: 24px 20px; }
-  .gitnote-pdf-frame { height: calc(100vh - 116px); }
+  .gitnote-pdf-frame { height: calc(100vh - 88px); }
+
+  /* Show only filename in breadcrumb on mobile */
+  .gn-breadcrumb-seg,
+  .gn-breadcrumb-sep { display: none; }
 }
 
 /* =====================================================================

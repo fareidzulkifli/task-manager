@@ -103,20 +103,16 @@ export default function Sidebar() {
 
   if (pathname === '/login' || pathname.startsWith('/share')) return null
 
-  // On desktop, we want to hide the sidebar completely for GitNotes so it remains full-screen.
-  // We use a CSS class to hide it on desktop instead of inline 'display: none' so mobile animations still work.
-  const isGitNoteRoute = pathname.startsWith('/gitnote');
-
   return (
     <>
       {/* Mobile Overlay Backdrop */}
-      <div 
+      <div
         className={`sidebar-backdrop ${isMobileOpen ? 'open' : ''}`}
         onClick={() => setIsMobileOpen(false)}
       />
-      
-      <aside 
-        className={`sidebar ${isMobileOpen ? 'mobile-open' : ''} ${isGitNoteRoute ? 'sidebar-hidden-desktop' : ''}`} 
+
+      <aside
+        className={`sidebar ${isMobileOpen ? 'mobile-open' : ''}`}
         style={{ background: 'var(--surface)' }}
       >
         <div className="sidebar-header">

@@ -749,7 +749,7 @@ function TaskRow({ task, onTaskClick, onTaskPatch, isExpanded, onToggleExpand })
               display: 'grid',
               gridTemplateColumns: '48px minmax(300px, 2fr) 120px 140px 80px',
               alignItems: 'center',
-              padding: '0 16px',
+              padding: '0 16px 0 44px',
               minHeight: '44px',
               cursor: 'pointer',
             }}
@@ -791,8 +791,20 @@ function TaskRow({ task, onTaskClick, onTaskPatch, isExpanded, onToggleExpand })
               {task.notes_markdown && <FileText size={11} color="var(--text-disabled)" />}
             </div>
 
+            {/* Due Date */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '6px', fontSize: '12px', padding: '0 0 0 0', color: task.due_date ? 'var(--text-secondary)' : 'var(--text-disabled)' }}>
+              {task.due_date ? (
+                <>
+                  <Calendar size={12} />
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px' }}>{task.due_date}</span>
+                </>
+              ) : (
+                <span style={{ opacity: 0.3 }}>—</span>
+              )}
+            </div>
+
             {/* Priority — pill badges */}
-            <div style={{ display: 'flex', gap: '4px' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '4px', padding: '0 30px 0 0'}}>
               <button
                 onClick={(e) => handleToggleFlag(e, 'urgent')}
                 title="Toggle Urgency"
@@ -831,17 +843,7 @@ function TaskRow({ task, onTaskClick, onTaskPatch, isExpanded, onToggleExpand })
               </button>
             </div>
 
-            {/* Due Date */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: task.due_date ? 'var(--text-secondary)' : 'var(--text-disabled)' }}>
-              {task.due_date ? (
-                <>
-                  <Calendar size={12} />
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px' }}>{task.due_date}</span>
-                </>
-              ) : (
-                <span style={{ opacity: 0.3 }}>—</span>
-              )}
-            </div>
+
 
             {/* Actions */}
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '4px' }}>

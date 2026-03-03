@@ -18,6 +18,13 @@ const CONTENT_TYPES = {
   xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   xlxs: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   xls:  'application/vnd.ms-excel',
+  png:  'image/png',
+  jpg:  'image/jpeg',
+  jpeg: 'image/jpeg',
+  gif:  'image/gif',
+  webp: 'image/webp',
+  svg:  'image/svg+xml',
+  ico:  'image/x-icon',
 }
 
 export async function GET(request) {

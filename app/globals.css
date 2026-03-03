@@ -2004,3 +2004,19 @@ input::placeholder, textarea::placeholder { color: var(--text-disabled); }
   border: 1px solid #2e2e2e;
   display: block;
 }
+
+/* ── Image file viewer ── */
+.gn-image-view {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 32px;
+  min-height: 200px;
+}
+.gn-image-preview {
+  max-width: 100%;
+  max-height: 80vh;
+  border-radius: 6px;
+  border: 1px solid var(--gn-border);
+  object-fit: contain;
+}

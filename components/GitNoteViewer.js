@@ -10,6 +10,26 @@ import { FileText, Loader2, AlertCircle, Download, ChevronRight, Share2, Check, 
 const TEXT_EXTENSIONS  = new Set(['md', 'txt', 'js', 'ts', 'jsx', 'tsx', 'py', 'json', 'yaml', 'yml', 'toml', 'sh', 'css', 'html', 'xml', 'csv', 'sql'])
 const DOCX_EXTENSIONS  = new Set(['doc', 'docx'])
 const EXCEL_EXTENSIONS = new Set(['xls', 'xlsx', 'xlxs'])
+const IMAGE_EXTENSIONS = new Set(['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'ico'])
+
+function resolvePath(base, relative) {
+  const parts = (base + '/' + relative).split('/')
+  const resolved = []
+  for (const part of parts) {
+    if (part === '..') resolved.pop()
+    else if (part !== '.') resolved.push(part)
+  }
+  return resolved.join('/')
+}
+
+function rewriteImageSrcs(html, filePath) {
+  const dir = filePath.split('/').slice(0, -1).join('/')
+  return html.replace(/<img([^>]*?)\ssrc="([^"]*)"([^>]*?)>/gi, (match, before, src, after) => {
+    if (/^https?:\/\/|^\/|^data:/.test(src)) return match
+    const resolved = resolvePath(dir, src)
+    return `<img${before} src="/api/gitnote/raw?path=${encodeURIComponent(resolved)}"${after}>`
+  })
+}
 
 function Breadcrumb({ path }) {
   const parts = path.split('/')
@@ -59,6 +79,7 @@ export default function GitNoteViewer({ filePath, onToggleExplorer, explorerVisi
   const isText   = TEXT_EXTENSIONS.has(ext)
   const isDocx   = DOCX_EXTENSIONS.has(ext)
   const isExcel  = EXCEL_EXTENSIONS.has(ext)
+  const isImage  = IMAGE_EXTENSIONS.has(ext)
   const rawUrl   = filePath ? `/api/gitnote/raw?path=${encodeURIComponent(filePath)}` : null
 
   useEffect(() => {
@@ -71,7 +92,7 @@ export default function GitNoteViewer({ filePath, onToggleExplorer, explorerVisi
     const clean = typeof window !== 'undefined'
       ? DOMPurify.sanitize(html)
       : html
-    setMarkdownHtml(clean)
+    setMarkdownHtml(rewriteImageSrcs(clean, filePath))
   }, [content, ext])
 
   useEffect(() => {
@@ -271,8 +292,15 @@ export default function GitNoteViewer({ filePath, onToggleExplorer, explorerVisi
           </div>
         )}
 
+        {/* Image */}
+        {isImage && (
+          <div className="gn-image-view">
+            <img src={rawUrl} alt={filename} className="gn-image-preview" />
+          </div>
+        )}
+
         {/* Unknown binary */}
-        {!isPdf && !loading && !error && !isText && !isDocx && !isExcel && (
+        {!isPdf && !loading && !error && !isText && !isDocx && !isExcel && !isImage && (
           <div className="gn-state-msg" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '16px', paddingTop: '40px' }}>
             <span>Binary file — cannot display inline.</span>
             <a href={rawUrl} download className="gn-download-btn gn-download-prominent">

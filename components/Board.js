@@ -15,7 +15,8 @@ import {
   Zap,
   History,
   RefreshCcw,
-  PanelLeft
+  PanelLeft,
+  Maximize2
 } from 'lucide-react'
 
 // Priority score: urgent+important(0) > urgent(1) > important(2) > none(3)
@@ -363,14 +364,24 @@ export default function Board({ orgId }) {
                         </div>
                       </div>
                     </div>
-                    <button
-                      onClick={() => handleRestoreTask(task.id)}
-                      className="btn-ghost"
-                      style={{ padding: '6px 12px', fontSize: '11px', gap: '6px', color: 'var(--accent)' }}
-                    >
-                      <RefreshCcw size={12} />
-                      Restore
-                    </button>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <button
+                        onClick={() => openTaskModal(task)}
+                        className="btn-ghost"
+                        style={{ padding: '6px', color: 'var(--text-muted)' }}
+                        title="Open full details"
+                      >
+                        <Maximize2 size={14} />
+                      </button>
+                      <button
+                        onClick={() => handleRestoreTask(task.id)}
+                        className="btn-ghost"
+                        style={{ padding: '6px 12px', fontSize: '11px', gap: '6px', color: 'var(--accent)' }}
+                      >
+                        <RefreshCcw size={12} />
+                        Restore
+                      </button>
+                    </div>
                   </div>
                 ))
               }

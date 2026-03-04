@@ -15,9 +15,10 @@ import {
   Loader2,
   ArrowRight,
   History,
-  Edit,
+  Info,
   Trash2
 } from 'lucide-react'
+import ProjectModal from './ProjectModal'
 
 export default function ListView({ projects, tasks, onTaskClick, onTaskPatch, onViewCompleted }) {
   const [expandedTaskId, setExpandedTaskId] = useState(null)
@@ -111,6 +112,7 @@ function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewComplete
   const [newTaskUrgent, setNewTaskUrgent] = useState(false)
   const [newTaskImportant, setNewTaskImportant] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [detailProject, setDetailProject] = useState(null)
 
   const handleOpenCreate = (e) => {
     e.stopPropagation()
@@ -120,21 +122,9 @@ function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewComplete
     setShowCreateModal(true)
   }
 
-  const handleEditProject = async () => {
-    const newName = prompt('Enter new project name:', project.name)
-    if (!newName || newName === project.name) return
-    try {
-      await fetch(`/api/projects/${project.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: newName })
-      })
-      window.dispatchEvent(new Event('taskUpdated'))
-    } catch (err) {
-      alert('Error updating project: ' + err.message)
-    } finally {
-      setShowMenu(false)
-    }
+  const handleEditProject = () => {
+    setDetailProject(project)
+    setShowMenu(false)
   }
 
   const handleDeleteProject = async () => {
@@ -183,6 +173,14 @@ function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewComplete
 
   return (
     <>
+      {detailProject && (
+        <ProjectModal
+          project={detailProject}
+          onClose={() => setDetailProject(null)}
+          onProjectUpdate={(updated) => setDetailProject(updated)}
+        />
+      )}
+
       {/* Flat section — no card wrapper */}
       <div className="project-section">
         {/* Section Header */}
@@ -196,8 +194,8 @@ function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewComplete
             borderBottom: '1px solid var(--border)',
           }}
         >
-          {/* Left: collapse toggle + name + count */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          {/* Left: collapse toggle + name + details btn + count */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <button
               onClick={() => setIsExpanded(!isExpanded)}
               style={{
@@ -208,6 +206,7 @@ function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewComplete
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
+                flexShrink: 0,
               }}
             >
               {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
@@ -228,6 +227,23 @@ function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewComplete
             >
               {project.name}
             </span>
+            <button
+              onClick={(e) => { e.stopPropagation(); handleEditProject(); }}
+              title="Project Details"
+              style={{
+                background: 'transparent',
+                border: 'none',
+                padding: '2px',
+                color: 'var(--text-disabled)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                flexShrink: 0,
+                borderRadius: '4px',
+              }}
+            >
+              <Info size={13} />
+            </button>
             <span className="project-task-count" style={{
               fontSize: '10px',
               fontWeight: '600',
@@ -252,14 +268,6 @@ function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewComplete
               >
                 <History size={11} />
                 <span>History</span>
-              </button>
-              <button
-                onClick={(e) => { e.stopPropagation(); handleEditProject(); }}
-                className="lv-pill-btn"
-                title="Rename Project"
-                style={{ padding: '4px 8px', color: 'var(--text-muted)' }}
-              >
-                <Edit size={12} />
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); handleDeleteProject(); }}
@@ -338,7 +346,7 @@ function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewComplete
                       className="btn-ghost"
                       style={{ justifyContent: 'flex-start', padding: '8px 12px', fontSize: '12px' }}
                     >
-                      <Edit size={14} /> Rename
+                      <Info size={14} /> Details
                     </button>
                     <button
                       onClick={(e) => { e.stopPropagation(); handleDeleteProject(); }}

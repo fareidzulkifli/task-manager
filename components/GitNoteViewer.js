@@ -66,7 +66,8 @@ export default function GitNoteViewer({ filePath, onToggleExplorer, explorerVisi
   const markdownRef                     = useRef(null)
 
   const handleShare = () => {
-    const url = window.location.origin + '/share/' + filePath
+    const encodedPath = filePath.split('/').map(encodeURIComponent).join('/')
+    const url = window.location.origin + '/share/' + encodedPath
     navigator.clipboard.writeText(url).then(() => {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)

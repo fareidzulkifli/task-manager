@@ -52,8 +52,15 @@ export default function Board({ orgId }) {
   const [newProjectName, setNewProjectName] = useState('')
 
   const handleTaskPatch = (taskId, updates) => {
-    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, ...updates } : t))
-    window.dispatchEvent(new Event('taskUpdated'))
+    let shouldDispatch = false
+    setTasks(prev => {
+      const current = prev.find(t => t.id === taskId)
+      shouldDispatch = current != null && 'status' in updates && updates.status !== current.status
+      return prev.map(t => t.id === taskId ? { ...t, ...updates } : t)
+    })
+    if (shouldDispatch) {
+      window.dispatchEvent(new Event('taskUpdated'))
+    }
   }
 
   const handleToggleSidebar = () => {
@@ -117,14 +124,20 @@ export default function Board({ orgId }) {
 
   useEffect(() => {
     if (orgId) fetchData(true)
-
-    const handleTaskUpdateEvent = () => {
-      fetchData(false)
-    }
-
-    window.addEventListener('taskUpdated', handleTaskUpdateEvent)
-    return () => window.removeEventListener('taskUpdated', handleTaskUpdateEvent)
   }, [orgId])
+
+  const handleTaskCreated = (newTask) => {
+    setTasks(prev => [...prev, newTask])
+  }
+
+  const handleTaskDeleted = (taskId) => {
+    setTasks(prev => prev.filter(t => t.id !== taskId))
+  }
+
+  const handleProjectDeleted = (projectId) => {
+    setProjects(prev => prev.filter(p => p.id !== projectId))
+    setTasks(prev => prev.filter(t => t.project_id !== projectId))
+  }
 
   const openTaskModal = (task) => {
     setSelectedTask(task)
@@ -305,6 +318,9 @@ export default function Board({ orgId }) {
         onTaskClick={openTaskModal}
         onTaskPatch={handleTaskPatch}
         onViewCompleted={handleViewCompleted}
+        onTaskCreated={handleTaskCreated}
+        onTaskDeleted={handleTaskDeleted}
+        onProjectDeleted={handleProjectDeleted}
       />
 
       {/* Completed Tasks Modal */}
@@ -487,7 +503,7 @@ export default function Board({ orgId }) {
         <TaskModal
           task={selectedTask}
           onClose={handleCloseModal}
-          onTaskUpdated={() => fetchData(false)}
+          onTaskUpdated={() => handleTaskDeleted(selectedTask?.id)}
           onTaskPatch={handleTaskPatch}
           projectContext={projects.find(p => p.id === selectedTask?.project_id)}
         />

@@ -10,7 +10,8 @@
       "mcp__claude_ai_Supabase__apply_migration",
       "Bash(cd /c/Users/Hypernix/code-my/personal/task-manager && npm install react-markdown remark-gfm rehype-highlight highlight.js 2>&1)",
       "Bash(npm install:*)",
-      "Bash(xargs wc:*)"
+      "Bash(xargs wc:*)",
+      "Bash(grep:*)"
     ]
   },
   "outputStyle": "default"

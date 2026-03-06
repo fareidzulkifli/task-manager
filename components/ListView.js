@@ -20,7 +20,7 @@ import {
 } from 'lucide-react'
 import ProjectModal from './ProjectModal'
 
-export default function ListView({ projects, tasks, onTaskClick, onTaskPatch, onViewCompleted }) {
+export default function ListView({ projects, tasks, onTaskClick, onTaskPatch, onViewCompleted, onTaskCreated, onTaskDeleted, onProjectDeleted }) {
   const [expandedTaskId, setExpandedTaskId] = useState(null)
 
   const headers = [
@@ -83,6 +83,9 @@ export default function ListView({ projects, tasks, onTaskClick, onTaskPatch, on
             onViewCompleted={() => onViewCompleted(project)}
             expandedTaskId={expandedTaskId}
             onToggleExpand={(taskId) => setExpandedTaskId(prev => prev === taskId ? null : taskId)}
+            onTaskCreated={onTaskCreated}
+            onTaskDeleted={onTaskDeleted}
+            onProjectDeleted={onProjectDeleted}
           />
         )
       })}
@@ -104,7 +107,7 @@ export default function ListView({ projects, tasks, onTaskClick, onTaskPatch, on
   )
 }
 
-function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewCompleted, expandedTaskId, onToggleExpand }) {
+function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewCompleted, expandedTaskId, onToggleExpand, onTaskCreated, onTaskDeleted, onProjectDeleted }) {
   const [isExpanded, setIsExpanded] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showMenu, setShowMenu] = useState(false)
@@ -131,6 +134,7 @@ function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewComplete
     if (!confirm('Are you sure you want to delete this project? All tasks will be deleted.')) return
     try {
       await fetch(`/api/projects/${project.id}`, { method: 'DELETE' })
+      onProjectDeleted(project.id)
       window.dispatchEvent(new Event('taskUpdated'))
     } catch (err) {
       alert('Error deleting project: ' + err.message)
@@ -156,6 +160,7 @@ function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewComplete
       })
       const newTask = await res.json()
       if (newTask.error) throw new Error(newTask.error)
+      onTaskCreated(newTask)
       setShowCreateModal(false)
       window.dispatchEvent(new Event('taskUpdated'))
     } catch (err) {
@@ -373,6 +378,7 @@ function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewComplete
                 onTaskPatch={onTaskPatch}
                 isExpanded={expandedTaskId === task.id}
                 onToggleExpand={() => onToggleExpand(task.id)}
+                onTaskDeleted={onTaskDeleted}
               />
             ))}
             {tasks.length === 0 && (
@@ -619,7 +625,7 @@ function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewComplete
   )
 }
 
-function TaskRow({ task, onTaskClick, onTaskPatch, isExpanded, onToggleExpand }) {
+function TaskRow({ task, onTaskClick, onTaskPatch, isExpanded, onToggleExpand, onTaskDeleted }) {
   const isDone = task.status === 'Done'
   const [swipeOffset, setSwipeOffset] = useState(0)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
@@ -695,6 +701,7 @@ function TaskRow({ task, onTaskClick, onTaskPatch, isExpanded, onToggleExpand })
     try {
       setDeleting(true)
       await fetch(`/api/tasks/${task.id}`, { method: 'DELETE' })
+      onTaskDeleted(task.id)
       setShowDeleteConfirm(false)
       window.dispatchEvent(new Event('taskUpdated'))
     } catch (err) {

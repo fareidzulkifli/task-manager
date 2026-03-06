@@ -1,133 +1,47 @@
-'use client';
+import { createServer } from '@/lib/supabase/server'
+import DashboardView from '@/components/DashboardView'
 
-import { useState, useEffect } from 'react'
-import Link from 'next/link'
-import {
-  LayoutDashboard,
-  Layers,
-  Clock,
-  CheckCircle2,
-  Circle,
-  TrendingUp,
-  ArrowRight,
-  Loader2,
-  Plus,
-  Menu
-} from 'lucide-react'
+export default async function Home() {
+  const supabase = await createServer()
 
-export default function Home() {
-  const [projects, setProjects] = useState([])
-  const [loading, setLoading] = useState(true)
+  const { data: projects, error: projectsError } = await supabase
+    .from('projects')
+    .select(`*, organizations (name, slug)`)
+    .limit(20)
 
-  useEffect(() => {
-    async function fetchDashboard() {
-      try {
-        const res = await fetch('/api/dashboard')
-        const data = await res.json()
-        if (Array.isArray(data)) {
-          setProjects(data)
-        }
-      } catch (err) {
-        console.error('Failed to fetch dashboard:', err)
-      } finally {
-        setLoading(false)
-      }
+  if (projectsError || !projects) return <DashboardView projects={[]} />
+
+  const projectIds = projects.map(p => p.id)
+  if (projectIds.length === 0) return <DashboardView projects={[]} />
+
+  const { data: tasks } = await supabase
+    .from('tasks')
+    .select('project_id, status, updated_at, created_at')
+    .in('project_id', projectIds)
+
+  const projectStats = projects.map(project => {
+    const projectTasks = (tasks || []).filter(t => t.project_id === project.id)
+
+    const dates = [new Date(project.created_at)]
+    projectTasks.forEach(t => {
+      if (t.updated_at) dates.push(new Date(t.updated_at))
+      if (t.created_at) dates.push(new Date(t.created_at))
+    })
+    const lastWorkedOn = new Date(Math.max(...dates.map(d => d.getTime())))
+
+    return {
+      ...project,
+      org_name: project.organizations?.name || 'Unknown Organization',
+      org_slug: project.organizations?.slug,
+      total_tasks: projectTasks.length,
+      incomplete_tasks: projectTasks.filter(t => t.status !== 'Done').length,
+      last_worked_on: lastWorkedOn.toISOString(),
     }
-    fetchDashboard()
-  }, [])
+  })
 
-  if (loading) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', gap: '12px' }}>
-      <Loader2 className="animate-spin" size={24} color="var(--accent)" />
-      <span style={{ color: 'var(--text-muted)', fontWeight: '500' }}>Loading dashboard...</span>
-    </div>
-  )
+  const recentProjects = projectStats
+    .sort((a, b) => new Date(b.last_worked_on) - new Date(a.last_worked_on))
+    .slice(0, 6)
 
-  return (
-    <div className="dashboard-container animate-fade-in">
-      <header className="dashboard-header">
-        <div className="dashboard-header-left">
-          <button
-            className="mobile-menu-btn btn-ghost"
-            onClick={() => window.dispatchEvent(new Event('toggle-sidebar'))}
-            style={{ display: 'none' }}
-          >
-            <Menu size={20} />
-          </button>
-          <div>
-            <h1 className="dashboard-title text-gradient">Dashboard</h1>
-            <p className="dashboard-subtitle">Overview of your most recently active projects</p>
-          </div>
-        </div>
-        <div className="dashboard-badge">
-          <div className="badge" style={{ padding: '6px 12px', background: 'var(--surface-alt)', border: '1px solid var(--border)' }}>
-            <TrendingUp size={14} style={{ marginRight: '6px' }} />
-            Active Productivity
-          </div>
-        </div>
-      </header>
-
-      {projects.length === 0 ? (
-        <div className="card" style={{ textAlign: 'center', padding: '80px 48px', borderStyle: 'dashed', background: 'transparent' }}>
-          <div className="sidebar-logo-icon" style={{ width: '48px', height: '48px', margin: '0 auto 24px', borderRadius: '12px' }}>
-            <Layers size={24} color="#fff" />
-          </div>
-          <h2 style={{ marginBottom: '12px', fontSize: '20px', fontWeight: '600' }}>No projects yet</h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: '14px', maxWidth: '320px', margin: '0 auto 32px', lineHeight: '1.6' }}>
-            Get started by creating your first organization and project from the sidebar.
-          </p>
-        </div>
-      ) : (
-        <div className="project-grid">
-          {projects.map(project => (
-            <Link
-              key={project.id}
-              href={`/task/org/${project.org_slug}`}
-              className="project-card animate-fade-in"
-              style={{ padding: '28px' }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
-                <div>
-                  <span className="project-card-org" style={{ background: 'var(--accent-subtle)', color: 'var(--accent)', padding: '2px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: '700' }}>
-                    {project.org_name}
-                  </span>
-                  <h3 className="project-card-name" style={{ marginTop: '8px', fontSize: '18px' }}>{project.name}</h3>
-                </div>
-                <div style={{ background: 'var(--surface-alt)', padding: '8px', borderRadius: '8px', color: 'var(--text-muted)' }}>
-                  <ArrowRight size={18} />
-                </div>
-              </div>
-
-              <p className="project-card-desc" style={{ marginBottom: '24px', fontSize: '14px', lineHeight: '1.6' }}>
-                {project.goal || project.description_markdown || 'No description available.'}
-              </p>
-
-              <div className="project-card-footer" style={{ borderTop: '1px solid var(--border)', paddingTop: '20px' }}>
-                <div className="project-stats" style={{ gap: '24px' }}>
-                  <div className="project-stat" style={{ textAlign: 'left' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-muted)', marginBottom: '4px' }}>
-                      <Circle size={10} color="var(--accent)" fill="var(--accent)" />
-                      <span className="project-stat-label">To Do</span>
-                    </div>
-                    <div className="project-stat-value" style={{ fontSize: '24px' }}>{project.incomplete_tasks}</div>
-                  </div>
-                  <div className="project-stat" style={{ textAlign: 'left' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-muted)', marginBottom: '4px' }}>
-                      <CheckCircle2 size={12} />
-                      <span className="project-stat-label">Total</span>
-                    </div>
-                    <div className="project-stat-value" style={{ fontSize: '24px', color: 'var(--text-disabled)' }}>{project.total_tasks}</div>
-                  </div>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-muted)', fontSize: '12px' }}>
-                  <Clock size={12} />
-                  {new Date(project.last_worked_on).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      )}
-    </div>
-  )
+  return <DashboardView projects={recentProjects} />
 }

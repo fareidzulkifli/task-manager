@@ -5,28 +5,18 @@ export async function GET() {
   try {
     const supabase = await createServer()
 
-    // Fetch organizations
-    const { data: orgs, error: orgsError } = await supabase
-      .from('organizations')
-      .select('*')
-      .order('order_index', { ascending: true })
+    const [
+      { data: orgs, error: orgsError },
+      { data: projects, error: projectsError },
+      { data: taskCounts, error: tasksError },
+    ] = await Promise.all([
+      supabase.from('organizations').select('*').order('order_index', { ascending: true }),
+      supabase.from('projects').select('*').order('order_index', { ascending: true }),
+      supabase.from('tasks').select('project_id').neq('status', 'Done'),
+    ])
 
     if (orgsError) throw orgsError
-
-    // Fetch projects
-    const { data: projects, error: projectsError } = await supabase
-      .from('projects')
-      .select('*')
-      .order('order_index', { ascending: true })
-
     if (projectsError) throw projectsError
-
-    // Fetch incomplete tasks count per project
-    const { data: taskCounts, error: tasksError } = await supabase
-      .from('tasks')
-      .select('project_id')
-      .neq('status', 'Done')
-
     if (tasksError) throw tasksError
 
     // Process counts

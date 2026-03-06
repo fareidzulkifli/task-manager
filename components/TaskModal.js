@@ -74,7 +74,9 @@ export default function TaskModal({ task, onClose, onTaskUpdated, onTaskPatch, p
       const result = await res.json()
       if (result.error) throw new Error(result.error)
       onTaskPatch?.(task.id, result)
-      window.dispatchEvent(new Event('taskUpdated'))
+      if (data.status !== task.status) {
+        window.dispatchEvent(new Event('taskUpdated'))
+      }
     } catch (err) {
       alert('Error saving task: ' + err.message)
     } finally {

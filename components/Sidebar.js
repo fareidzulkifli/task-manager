@@ -71,16 +71,18 @@ export default function Sidebar() {
   }, [pathname, currentOrgSlug])
 
   useEffect(() => {
-    if (pathname === '/login') return
+    if (pathname === '/login' || pathname.startsWith('/share')) return
     fetchNav()
-    
+  }, [])
+
+  useEffect(() => {
     window.addEventListener('taskUpdated', fetchNav)
     const interval = setInterval(fetchNav, 60000)
     return () => {
       window.removeEventListener('taskUpdated', fetchNav)
       clearInterval(interval)
     }
-  }, [pathname])
+  }, [])
 
   const handleCreateOrg = async () => {
     const name = prompt('Organization Name:')

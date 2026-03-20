@@ -88,7 +88,7 @@ function getFileIcon(name) {
 }
 
 function TreeNode({ name, node, depth, selectedPath, onSelect, defaultOpen }) {
-  const [open, setOpen] = useState(defaultOpen || depth === 0)
+  const [open, setOpen] = useState(defaultOpen)
 
   if (node.__type === 'file') {
     const isSelected = selectedPath === node.__path
@@ -234,7 +234,7 @@ export default function GitNoteExplorer({ selectedPath, onSelect }) {
               depth={0}
               selectedPath={selectedPath}
               onSelect={onSelect}
-              defaultOpen={true}
+              defaultOpen={false}
             />
           ))}
       </div>

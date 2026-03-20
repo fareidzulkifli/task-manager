@@ -1747,6 +1747,7 @@ input::placeholder, textarea::placeholder { color: var(--text-disabled); }
   }
   .gitnote-explorer.mobile-open { transform: translateX(0); }
   .gitnote-viewer-header { padding: 0 16px; }
+  .share-theme-btn { display: none; }
   .gitnote-viewer-content { padding: 24px 20px; }
   .gitnote-pdf-frame { height: calc(100vh - 88px); }
 

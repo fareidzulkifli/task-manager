@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { LayoutDashboard, Menu, X } from 'lucide-react'
+import { LayoutDashboard, Menu, X, Sun, Moon } from 'lucide-react'
 import GitNoteExplorer from './GitNoteExplorer'
 import GitNoteViewer from './GitNoteViewer'
 
@@ -84,6 +84,13 @@ export default function GitNoteLayout({ initialPath }) {
           <LayoutDashboard size={18} />
         </button>
         <span className="gitnote-mobile-title">BA Notes</span>
+        <button
+          className="gitnote-icon-btn"
+          onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
+          title="Toggle theme"
+        >
+          {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+        </button>
         <button
           className="gitnote-icon-btn"
           onClick={() => setExplorerOpen(o => !o)}

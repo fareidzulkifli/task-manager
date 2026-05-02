@@ -43,5 +43,6 @@ next-env.d.ts
 # AI
 claude.md
 gemini.md
+agents.md
 finding*
 /.docs

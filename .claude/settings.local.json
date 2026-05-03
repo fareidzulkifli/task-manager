@@ -14,5 +14,9 @@
       "Bash(grep:*)"
     ]
   },
-  "outputStyle": "default"
+  "enabledMcpjsonServers": [
+    "supabase"
+  ],
+  "outputStyle": "default",
+  "enableAllProjectMcpServers": true
 }

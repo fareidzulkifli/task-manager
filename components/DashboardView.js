@@ -3,11 +3,8 @@
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import {
-  Activity,
   AlertTriangle,
   ArrowRight,
-  BarChart3,
-  CalendarDays,
   CheckCircle2,
   Circle,
   Clock,
@@ -15,26 +12,14 @@ import {
   Layers,
   Menu,
   Plus,
-  ShieldCheck,
-  Target,
   Trash2,
-  TrendingUp,
-  X
+  X,
 } from 'lucide-react'
-
-const kpiIcons = {
-  'Active Tasks': Activity,
-  'High Priority': Target,
-  'In Progress': Activity,
-  KIV: Clock,
-  'Completed Week': CheckCircle2,
-  'Active Projects': Layers,
-}
 
 const healthIcon = {
   Critical: AlertTriangle,
   'At Risk': Clock,
-  Active: Activity,
+  Active: Circle,
   Clear: CheckCircle2,
 }
 
@@ -75,102 +60,90 @@ const formatDayTitle = (key) =>
     year: 'numeric',
   }).format(dateFromKey(key))
 
+const formatHeaderDate = (key) =>
+  new Intl.DateTimeFormat('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(dateFromKey(key))
+
 function EmptyDashboard({ error }) {
   return (
     <div className="dashboard-empty-panel">
       <div className="dashboard-empty-icon">
-        <Layers size={22} />
+        <Layers size={20} />
       </div>
       <h2>{error ? 'Dashboard unavailable' : 'No active portfolio yet'}</h2>
-      <p>{error || 'The control tower will populate once active organizations, projects, and tasks exist.'}</p>
+      <p>{error || 'The dashboard will populate once organizations, projects, and tasks exist.'}</p>
     </div>
   )
 }
 
 function KpiStrip({ items }) {
   return (
-    <section className="dashboard-kpi-strip" aria-label="Executive metrics">
-      {items.map(item => {
-        const Icon = kpiIcons[item.label] || BarChart3
-        return (
-          <div key={item.label} className={`dashboard-kpi dashboard-kpi-${item.tone}`}>
-            <div className="dashboard-kpi-icon">
-              <Icon size={16} />
-            </div>
-            <div>
-              <span>{item.label}</span>
-              <strong>{item.value.toString().padStart(2, '0')}</strong>
-              <small>{item.detail}</small>
-            </div>
-          </div>
-        )
-      })}
-    </section>
+    <div className="dashboard-kpi-strip" aria-label="Key metrics">
+      {items.map(item => (
+        <div key={item.label} className={`dashboard-kpi dashboard-kpi-${item.tone}`}>
+          <strong>{item.value.toString().padStart(2, '0')}</strong>
+          <span>{item.label}</span>
+        </div>
+      ))}
+    </div>
   )
 }
 
-function CommandQueue({ tasks, events, todayKey, onAddEvent, onEditEvent, onDeleteEvent }) {
+function FocusPane({ tasks, events, todayKey, onAddEvent, onEditEvent, onDeleteEvent }) {
   const upcomingEvents = events
     .filter(event => event.event_date >= todayKey)
     .slice(0, 5)
 
   return (
-    <section className="dashboard-panel dashboard-priority-panel">
-      <div className="dashboard-panel-header">
-        <div>
-          <span className="dashboard-eyebrow">Command Queue</span>
-          <h2>High Priority Tasks</h2>
+    <div className="dashboard-left">
+      <div className="dashboard-focus-section">
+        <div className="dashboard-focus-header">
+          <span className="dashboard-section-label">Focus</span>
         </div>
-        <Target size={18} />
+        {tasks.length === 0 ? (
+          <div className="dashboard-panel-empty">No urgent tasks open.</div>
+        ) : (
+          <div className="dashboard-priority-list">
+            {tasks.map(task => (
+              <Link
+                key={task.id}
+                href={task.orgSlug ? `/task/org/${task.orgSlug}` : '/dashboard'}
+                className="dashboard-priority-row"
+              >
+                <div className="dashboard-priority-marker" />
+                <div className="dashboard-priority-copy">
+                  <strong>{task.summary}</strong>
+                  <span>{task.orgName} / {task.projectName}</span>
+                </div>
+                <div className="dashboard-priority-meta">
+                  <span className="dashboard-status-pill">{task.status}</span>
+                  <small>{task.age}</small>
+                </div>
+                <ArrowRight size={13} />
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
 
-      {tasks.length === 0 ? (
-        <div className="dashboard-panel-empty">
-          No urgent and important tasks are open.
-        </div>
-      ) : (
-        <div className="dashboard-priority-list">
-          {tasks.map(task => (
-            <Link
-              key={task.id}
-              href={task.orgSlug ? `/task/org/${task.orgSlug}` : '/dashboard'}
-              className="dashboard-priority-row"
-            >
-              <div className="dashboard-priority-marker" />
-              <div className="dashboard-priority-copy">
-                <strong>{task.summary}</strong>
-                <span>{task.orgName} / {task.projectName}</span>
-              </div>
-              <div className="dashboard-priority-meta">
-                <span className="dashboard-status-pill">{task.status}</span>
-                <small>{task.age}</small>
-              </div>
-              <ArrowRight size={15} />
-            </Link>
-          ))}
-        </div>
-      )}
-
-      <div className="dashboard-command-section">
-        <div className="dashboard-command-section-header">
-          <div>
-            <span className="dashboard-eyebrow">Events</span>
-            <h3>Upcoming Events</h3>
-          </div>
+      <div className="dashboard-focus-section">
+        <div className="dashboard-focus-header">
+          <span className="dashboard-section-label">Events</span>
           <button
             type="button"
             className="btn-ghost dashboard-event-add-btn"
             onClick={() => onAddEvent(todayKey)}
           >
-            <Plus size={13} />
-            Add Event
+            <Plus size={11} />
+            Add
           </button>
         </div>
-
         {upcomingEvents.length === 0 ? (
-          <div className="dashboard-events-empty">
-            No upcoming events.
-          </div>
+          <div className="dashboard-events-empty">No upcoming events.</div>
         ) : (
           <div className="dashboard-event-list">
             {upcomingEvents.map(event => (
@@ -181,11 +154,23 @@ function CommandQueue({ tasks, events, todayKey, onAddEvent, onEditEvent, onDele
                   <span>{formatEventDate(event.event_date)}</span>
                 </div>
                 <div className="dashboard-event-actions">
-                  <button type="button" className="btn-ghost" onClick={() => onEditEvent(event)} title="Edit event" aria-label="Edit event">
-                    <Edit3 size={12} />
+                  <button
+                    type="button"
+                    className="btn-ghost"
+                    onClick={() => onEditEvent(event)}
+                    title="Edit event"
+                    aria-label="Edit event"
+                  >
+                    <Edit3 size={11} />
                   </button>
-                  <button type="button" className="btn-ghost" onClick={() => onDeleteEvent(event)} title="Delete event" aria-label="Delete event">
-                    <Trash2 size={12} />
+                  <button
+                    type="button"
+                    className="btn-ghost"
+                    onClick={() => onDeleteEvent(event)}
+                    title="Delete event"
+                    aria-label="Delete event"
+                  >
+                    <Trash2 size={11} />
                   </button>
                 </div>
               </div>
@@ -193,7 +178,7 @@ function CommandQueue({ tasks, events, todayKey, onAddEvent, onEditEvent, onDele
           </div>
         )}
       </div>
-    </section>
+    </div>
   )
 }
 
@@ -209,12 +194,8 @@ function CalendarPanel({ calendar, events, onDayClick }) {
 
   return (
     <section className="dashboard-panel dashboard-calendar-panel">
-      <div className="dashboard-panel-header">
-        <div>
-          <span className="dashboard-eyebrow">Monthly Rhythm</span>
-          <h2>{calendar.label}</h2>
-        </div>
-        <CalendarDays size={18} />
+      <div className="dashboard-panel-hd">
+        <span className="dashboard-section-label">{calendar.label}</span>
       </div>
 
       <div className="dashboard-calendar">
@@ -245,7 +226,7 @@ function CalendarPanel({ calendar, events, onDayClick }) {
                   <span className="dashboard-calendar-day-number">{day.day}</span>
                   {dayEvents.length > 0 && (
                     <span className="dashboard-calendar-event-stack">
-                      {dayEvents.slice(0, 2).map(event => (
+                      {dayEvents.slice(0, 1).map(event => (
                         <span key={event.id} className={`dashboard-calendar-event-line event-${event.color}`}>
                           {event.title}
                         </span>
@@ -259,7 +240,7 @@ function CalendarPanel({ calendar, events, onDayClick }) {
                       </span>
                     )}
                     <span className="dashboard-calendar-metrics">
-                      {dayEvents.length > 0 && <em>{dayEvents.length}</em>}
+                      {dayEvents.length > 0 && <em />}
                       {day.completedCount > 0 && <b>{day.completedCount}</b>}
                     </span>
                   </span>
@@ -272,24 +253,40 @@ function CalendarPanel({ calendar, events, onDayClick }) {
       <div className="dashboard-calendar-legend">
         <span><i /> Movement</span>
         <span><em /> Event</span>
-        <span><b /> Completed</span>
+        <span><b /> Done</span>
       </div>
     </section>
   )
 }
 
 function HeatmapPanel({ heatmap }) {
+  const monthLabels = useMemo(() => {
+    return heatmap.weeks.map((week, i) => {
+      if (!week.length) return ''
+      const date = dateFromKey(week[0].key)
+      if (i === 0) return date.toLocaleString('en-US', { month: 'short' })
+      const prev = heatmap.weeks[i - 1]
+      if (!prev?.length) return ''
+      if (dateFromKey(prev[0].key).getMonth() !== date.getMonth()) {
+        return date.toLocaleString('en-US', { month: 'short' })
+      }
+      return ''
+    })
+  }, [heatmap.weeks])
+
   return (
-    <section className="dashboard-panel dashboard-heatmap-panel">
-      <div className="dashboard-panel-header">
-        <div>
-          <span className="dashboard-eyebrow">Execution Velocity</span>
-          <h2>Yearly Movement</h2>
-        </div>
-        <TrendingUp size={18} />
+    <section className="dashboard-panel">
+      <div className="dashboard-panel-hd">
+        <span className="dashboard-section-label">Activity</span>
+        <span className="dashboard-heatmap-total">{heatmap.totalMovements} movements</span>
       </div>
 
       <div className="dashboard-heatmap-wrap">
+        <div className="dashboard-heatmap-months">
+          {monthLabels.map((label, i) => (
+            <span key={i}>{label}</span>
+          ))}
+        </div>
         <div className="dashboard-heatmap">
           {heatmap.weeks.map((week, weekIndex) => (
             <div key={weekIndex} className="dashboard-heatmap-week">
@@ -297,7 +294,7 @@ function HeatmapPanel({ heatmap }) {
                 <span
                   key={day.key}
                   className={`dashboard-heatmap-cell level-${day.level}`}
-                  title={`${day.key}: ${day.count} movements`}
+                  title={`${day.key}: ${day.count}`}
                 />
               ))}
             </div>
@@ -306,7 +303,6 @@ function HeatmapPanel({ heatmap }) {
       </div>
 
       <div className="dashboard-heatmap-footer">
-        <span>{heatmap.totalMovements.toString().padStart(3, '0')} movements tracked</span>
         <div className="dashboard-heatmap-scale">
           <small>Less</small>
           {[0, 1, 2, 3, 4].map(level => <i key={level} className={`level-${level}`} />)}
@@ -323,16 +319,12 @@ function ExecutionMix({ mix }) {
 
   return (
     <section className="dashboard-panel">
-      <div className="dashboard-panel-header">
-        <div>
-          <span className="dashboard-eyebrow">Operating Model</span>
-          <h2>Execution Mix</h2>
-        </div>
-        <BarChart3 size={18} />
+      <div className="dashboard-panel-hd">
+        <span className="dashboard-section-label">Distribution</span>
       </div>
 
       <div className="dashboard-mix-group">
-        <h3>Status Distribution</h3>
+        <h3>Status</h3>
         {mix.status.map(item => (
           <div key={item.label} className="dashboard-mix-row">
             <span>{item.label}</span>
@@ -343,7 +335,7 @@ function ExecutionMix({ mix }) {
       </div>
 
       <div className="dashboard-mix-group">
-        <h3>Priority Load</h3>
+        <h3>Priority</h3>
         {mix.priority.map(item => (
           <div key={item.label} className="dashboard-mix-row">
             <span>{item.label}</span>
@@ -359,12 +351,8 @@ function ExecutionMix({ mix }) {
 function PortfolioTable({ projects }) {
   return (
     <section className="dashboard-panel dashboard-portfolio-panel">
-      <div className="dashboard-panel-header">
-        <div>
-          <span className="dashboard-eyebrow">Portfolio Control</span>
-          <h2>Project Health Matrix</h2>
-        </div>
-        <ShieldCheck size={18} />
+      <div className="dashboard-panel-hd">
+        <span className="dashboard-section-label">Portfolio</span>
       </div>
 
       <div className="dashboard-portfolio-table">
@@ -389,7 +377,7 @@ function PortfolioTable({ projects }) {
                 <small>{project.orgName}</small>
               </span>
               <span className={`dashboard-health dashboard-health-${project.health.toLowerCase().replace(' ', '-')}`}>
-                <Icon size={13} />
+                <Icon size={10} />
                 {project.health}
               </span>
               <span>{project.activeTasks}</span>
@@ -415,11 +403,11 @@ function EventFormModal({ form, saving, onChange, onClose, onSave }) {
       <div className="modal-content dashboard-event-modal">
         <div className="dashboard-event-modal-header">
           <div>
-            <span className="dashboard-eyebrow">Calendar Event</span>
+            <span className="dashboard-section-label" style={{ marginBottom: 6, display: 'block' }}>Calendar Event</span>
             <h2>{isEditing ? 'Edit Event' : 'Add Event'}</h2>
           </div>
           <button type="button" className="btn-ghost" onClick={onClose} aria-label="Close event form">
-            <X size={16} />
+            <X size={15} />
           </button>
         </div>
 
@@ -464,7 +452,7 @@ function EventFormModal({ form, saving, onChange, onClose, onSave }) {
               value={form.notes}
               onChange={(e) => onChange({ ...form, notes: e.target.value })}
               placeholder="Optional context"
-              rows={4}
+              rows={3}
             />
           </label>
         </div>
@@ -477,7 +465,7 @@ function EventFormModal({ form, saving, onChange, onClose, onSave }) {
             onClick={onSave}
             disabled={saving || !form.title.trim() || !form.event_date}
           >
-            {saving ? 'Saving...' : isEditing ? 'Save Event' : 'Create Event'}
+            {saving ? 'Saving…' : isEditing ? 'Save Event' : 'Create Event'}
           </button>
         </div>
       </div>
@@ -493,14 +481,14 @@ function DeleteEventModal({ event, deleting, onClose, onDelete }) {
     >
       <div className="modal-content dashboard-delete-modal">
         <div className="dashboard-delete-modal-icon">
-          <Trash2 size={18} />
+          <Trash2 size={16} />
         </div>
         <h2>Delete event?</h2>
-        <p>{event.title} on {formatEventDate(event.event_date)} will be removed from your dashboard calendar.</p>
+        <p>{event.title} on {formatEventDate(event.event_date)} will be removed.</p>
         <div className="dashboard-event-modal-actions">
           <button type="button" className="btn-ghost" onClick={onClose}>Cancel</button>
           <button type="button" className="btn-ghost dashboard-delete-btn" onClick={onDelete} disabled={deleting}>
-            {deleting ? 'Deleting...' : 'Delete Event'}
+            {deleting ? 'Deleting…' : 'Delete'}
           </button>
         </div>
       </div>
@@ -517,11 +505,11 @@ function DayDetailModal({ day, events, onClose, onAddEvent, onEditEvent, onDelet
       <div className="modal-content dashboard-day-modal">
         <div className="dashboard-event-modal-header">
           <div>
-            <span className="dashboard-eyebrow">Calendar Day</span>
+            <span className="dashboard-section-label" style={{ marginBottom: 6, display: 'block' }}>Calendar Day</span>
             <h2>{formatDayTitle(day.key)}</h2>
           </div>
           <button type="button" className="btn-ghost" onClick={onClose} aria-label="Close day details">
-            <X size={16} />
+            <X size={15} />
           </button>
         </div>
 
@@ -530,7 +518,7 @@ function DayDetailModal({ day, events, onClose, onAddEvent, onEditEvent, onDelet
             <div className="dashboard-day-section-header">
               <h3>Events</h3>
               <button type="button" className="btn-ghost dashboard-event-add-btn" onClick={() => onAddEvent(day.key)}>
-                <Plus size={13} />
+                <Plus size={11} />
                 Add Event
               </button>
             </div>
@@ -548,10 +536,10 @@ function DayDetailModal({ day, events, onClose, onAddEvent, onEditEvent, onDelet
                     </div>
                     <div className="dashboard-event-actions">
                       <button type="button" className="btn-ghost" onClick={() => onEditEvent(event)} title="Edit event" aria-label="Edit event">
-                        <Edit3 size={12} />
+                        <Edit3 size={11} />
                       </button>
                       <button type="button" className="btn-ghost" onClick={() => onDeleteEvent(event)} title="Delete event" aria-label="Delete event">
-                        <Trash2 size={12} />
+                        <Trash2 size={11} />
                       </button>
                     </div>
                   </div>
@@ -567,7 +555,7 @@ function DayDetailModal({ day, events, onClose, onAddEvent, onEditEvent, onDelet
             </div>
 
             {day.completedTasks.length === 0 ? (
-              <div className="dashboard-day-empty">No tasks were completed on this date.</div>
+              <div className="dashboard-day-empty">No tasks completed on this date.</div>
             ) : (
               <div className="dashboard-completed-list">
                 {day.completedTasks.map(task => (
@@ -576,12 +564,12 @@ function DayDetailModal({ day, events, onClose, onAddEvent, onEditEvent, onDelet
                     href={task.orgSlug ? `/task/org/${task.orgSlug}` : '/dashboard'}
                     className="dashboard-completed-row"
                   >
-                    <CheckCircle2 size={14} />
+                    <CheckCircle2 size={13} />
                     <div>
                       <strong>{task.summary}</strong>
                       <span>{task.orgName} / {task.projectName}</span>
                     </div>
-                    <ArrowRight size={14} />
+                    <ArrowRight size={13} />
                   </Link>
                 ))}
               </div>
@@ -608,13 +596,7 @@ export default function DashboardView({ data }) {
     : []
 
   const openAddEvent = (dateKey = todayKey) => {
-    setEventForm({
-      id: null,
-      title: '',
-      event_date: dateKey,
-      notes: '',
-      color: 'blue',
-    })
+    setEventForm({ id: null, title: '', event_date: dateKey, notes: '', color: 'blue' })
   }
 
   const openEditEvent = (event) => {
@@ -629,7 +611,6 @@ export default function DashboardView({ data }) {
 
   const handleSaveEvent = async () => {
     if (!eventForm?.title.trim() || !eventForm.event_date) return
-
     try {
       setSavingEvent(true)
       const url = eventForm.id ? `/api/dashboard/events/${eventForm.id}` : '/api/dashboard/events'
@@ -641,11 +622,10 @@ export default function DashboardView({ data }) {
           event_date: eventForm.event_date,
           notes: eventForm.notes,
           color: eventForm.color,
-        })
+        }),
       })
       const savedEvent = await res.json()
       if (savedEvent.error) throw new Error(savedEvent.error)
-
       setEvents(prev => sortEvents(eventForm.id
         ? prev.map(event => event.id === savedEvent.id ? savedEvent : event)
         : [...prev, savedEvent]
@@ -660,13 +640,11 @@ export default function DashboardView({ data }) {
 
   const handleDeleteEvent = async () => {
     if (!deleteEvent) return
-
     try {
       setDeletingEvent(true)
       const res = await fetch(`/api/dashboard/events/${deleteEvent.id}`, { method: 'DELETE' })
       const result = await res.json()
       if (result.error) throw new Error(result.error)
-
       setEvents(prev => prev.filter(event => event.id !== deleteEvent.id))
       setEventForm(prev => prev?.id === deleteEvent.id ? null : prev)
       setDeleteEvent(null)
@@ -678,7 +656,7 @@ export default function DashboardView({ data }) {
   }
 
   return (
-    <div className="dashboard-container dashboard-control-tower animate-fade-in">
+    <div className="dashboard-container animate-fade-in">
       <header className="dashboard-header">
         <div className="dashboard-header-left">
           <button
@@ -687,18 +665,11 @@ export default function DashboardView({ data }) {
             style={{ display: 'none' }}
             aria-label="Open navigation"
           >
-            <Menu size={20} />
+            <Menu size={18} />
           </button>
-          <div>
-            <span className="dashboard-eyebrow">Private Workspace</span>
-            <h1 className="dashboard-title">Executive Dashboard</h1>
-            <p className="dashboard-subtitle">Portfolio control tower for movement, priority, and execution focus.</p>
-          </div>
+          <span className="dashboard-title">Dashboard</span>
         </div>
-        <div className="dashboard-badge">
-          <ShieldCheck size={14} />
-          Control Tower
-        </div>
+        <span className="dashboard-meta">{formatHeaderDate(todayKey)}</span>
       </header>
 
       {!hasDashboard ? (
@@ -707,8 +678,8 @@ export default function DashboardView({ data }) {
         <>
           <KpiStrip items={dashboard.kpis} />
 
-          <div className="dashboard-top-grid">
-            <CommandQueue
+          <div className="dashboard-body">
+            <FocusPane
               tasks={dashboard.priorityTasks}
               events={events}
               todayKey={todayKey}
@@ -716,19 +687,21 @@ export default function DashboardView({ data }) {
               onEditEvent={openEditEvent}
               onDeleteEvent={setDeleteEvent}
             />
-            <CalendarPanel
-              calendar={dashboard.calendar}
-              events={events}
-              onDayClick={setSelectedDay}
-            />
-          </div>
 
-          <div className="dashboard-analysis-grid">
-            <HeatmapPanel heatmap={dashboard.heatmap} />
-            <ExecutionMix mix={dashboard.executionMix} />
-          </div>
+            <div className="dashboard-right">
+              <div className="dashboard-right-row">
+                <CalendarPanel
+                  calendar={dashboard.calendar}
+                  events={events}
+                  onDayClick={setSelectedDay}
+                />
+                <ExecutionMix mix={dashboard.executionMix} />
+              </div>
 
-          <PortfolioTable projects={dashboard.portfolio} />
+              <HeatmapPanel heatmap={dashboard.heatmap} />
+              <PortfolioTable projects={dashboard.portfolio} />
+            </div>
+          </div>
 
           {selectedDay && (
             <DayDetailModal

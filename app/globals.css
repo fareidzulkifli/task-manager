@@ -62,82 +62,82 @@
 
 /* =====================================================================
    LIGHT THEME
-   "True Azure & Sky" — Pure Blue Consumer Aesthetic
-   A distinct, vibrant light blue surface. Absolutely zero green/cyan undertones.
+   "Enterprise" — NetSuite-inspired corporate clarity
+   Clean neutral surfaces, confident corporate blue, warm amber accent.
    ===================================================================== */
 [data-theme='light'] {
-  /* Surfaces — Very clear, pure light blue (True Blue) */
-  --background:    #FFFFFF; 
-  --surface:       #E8F0FE; /* A clearer, more present true light blue */
-  --surface-alt:   #DCE8F9; /* Deeper pure blue for elevated panels */
-  --surface-raised:#CDE0F5; /* Interactive states */
+  /* Surfaces — neutral paper, no color tinting */
+  --background:    #FFFFFF;
+  --surface:       #F4F5F7;  /* neutral cool-gray, not blue */
+  --surface-alt:   #E8EAED;  /* slightly deeper for hover/alt rows */
+  --surface-raised:#DDE0E5;  /* active/pressed states */
 
-  /* Accent — Deep Royal/Sapphire Blue */
-  --accent:        #0052CC; /* Pure, strong, non-cyan blue */
-  --accent-hover:  #003DA1;
-  --accent-muted:  rgba(0, 82, 204, 0.12);
-  --accent-subtle: rgba(0, 82, 204, 0.06);
+  /* Accent — corporate mid-blue, confident and clear */
+  --accent:        #1760A8;  /* enterprise blue — not too dark, not bright */
+  --accent-hover:  #1254A0;
+  --accent-muted:  rgba(23, 96, 168, 0.14);
+  --accent-subtle: rgba(23, 96, 168, 0.07);
 
-  /* Text — Deep Indigo/Navy */
-  --text:          #0F172A; /* Deep indigo */
-  --text-secondary:#334155; /* Slate blue */
-  --text-muted:    #64748B;
-  --text-disabled: #94A3B8;
+  /* Text — deep navy hierarchy */
+  --text:          #1B2B3A;  /* near-navy, not pure black */
+  --text-secondary:#3D5166;  /* mid navy-slate */
+  --text-muted:    #637890;  /* cool medium gray */
+  --text-disabled: #9AABB8;  /* light blue-gray */
 
-  /* Borders — Crisp blue-gray */
-  --border:        #C6D8EF;
-  --border-strong: #A8C5E6;
+  /* Borders — warm neutral, crisp */
+  --border:        #CDD3DB;
+  --border-strong: #B0BBC6;
 
-  /* Semantic — saturated and bright */
-  --error:         #EF4444;
-  --error-muted:   rgba(239, 68, 68, 0.10);
-  --success:       #10B981;
-  --success-muted: rgba(16, 185, 129, 0.10);
-  --warning:       #F59E0B;
-  --warning-muted: rgba(245, 158, 11, 0.10);
+  /* Semantic — orange-shifted warning for enterprise warmth */
+  --error:         #C0392B;  /* strong red, not pink */
+  --error-muted:   rgba(192, 57, 43, 0.09);
+  --success:       #1A7A3F;  /* deeper corporate green */
+  --success-muted: rgba(26, 122, 63, 0.09);
+  --warning:       #D97706;  /* amber-orange — the "NetSuite warmth" color */
+  --warning-muted: rgba(217, 119, 6, 0.10);
 
-  /* Shadows — tinted deep indigo */
-  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
-  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.07), 0 1px 4px rgba(15, 23, 42, 0.04);
-  --shadow-lg: 0 10px 24px rgba(15, 23, 42, 0.09), 0 4px 10px rgba(15, 23, 42, 0.06);
-  --shadow-xl: 0 20px 40px rgba(15, 23, 42, 0.12);
+  /* Shadows — warm-neutral depth */
+  --shadow-sm: 0 1px 2px rgba(27, 43, 58, 0.06);
+  --shadow-md: 0 4px 12px rgba(27, 43, 58, 0.09), 0 1px 4px rgba(27, 43, 58, 0.05);
+  --shadow-lg: 0 10px 24px rgba(27, 43, 58, 0.11), 0 4px 10px rgba(27, 43, 58, 0.07);
+  --shadow-xl: 0 20px 40px rgba(27, 43, 58, 0.15);
 
   /* Glass */
-  --glass-bg:     rgba(255, 255, 255, 0.88);
-  --glass-border: rgba(15, 23, 42, 0.06);
+  --glass-bg:     rgba(255, 255, 255, 0.90);
+  --glass-border: rgba(27, 43, 58, 0.07);
 }
 
 /* =====================================================================
    LIGHT THEME COMPONENT OVERRIDES
    ===================================================================== */
 
-/* Modal overlay — tinted indigo */
+/* Modal overlay — deep navy tint */
 [data-theme='light'] .modal-overlay {
-  background: rgba(15, 23, 42, 0.40);
+  background: rgba(27, 43, 58, 0.42);
   backdrop-filter: blur(8px);
 }
 
-/* Primary button glow — vibrant sapphire */
+/* Primary button glow — corporate blue */
 [data-theme='light'] .btn-primary:hover:not(:disabled) {
-  box-shadow: 0 4px 14px rgba(0, 82, 204, 0.30);
+  box-shadow: 0 4px 14px rgba(23, 96, 168, 0.28);
 }
 
 [data-theme='light'] {
   --gn-bg:          #FFFFFF;
-  --gn-panel:       #F8FAFC;
-  --gn-hover:       #F1F5F9;
-  --gn-active:      #E2E8F0;
-  --gn-border:      #E2E8F0;
-  --gn-border-hi:   #CBD5E1;
-  --gn-text-hi:     #0F172A;
-  --gn-text:        #334155;
-  --gn-text-2:      #475569;
-  --gn-text-3:      #64748B;
-  --gn-code-bg:     #F1F5F9;
-  --gn-code-border: #E2E8F0;
-  --gn-inline-bg:   rgba(0,0,0,0.05);
-  --gn-inline-fg:   #C53030;
-  --gn-shadow:      0 8px 32px rgba(15, 23, 42, 0.1);
+  --gn-panel:       #F4F5F7;
+  --gn-hover:       #ECEEF1;
+  --gn-active:      #E2E6EA;
+  --gn-border:      #D4D9DF;
+  --gn-border-hi:   #B8C2CC;
+  --gn-text-hi:     #1B2B3A;
+  --gn-text:        #3D5166;
+  --gn-text-2:      #4F6477;
+  --gn-text-3:      #637890;
+  --gn-code-bg:     #ECEEF1;
+  --gn-code-border: #CDD3DB;
+  --gn-inline-bg:   rgba(27, 43, 58, 0.06);
+  --gn-inline-fg:   #C0392B;
+  --gn-shadow:      0 8px 32px rgba(27, 43, 58, 0.10);
 }
 
 /* =====================================================================

@@ -1,5 +1,6 @@
 import { createServer } from '@/lib/supabase/server'
 import DashboardView from '@/components/DashboardView'
+import { fetchMalaysiaHolidays } from '@/lib/malaysiaHolidays'
 
 export const dynamic = 'force-dynamic'
 
@@ -22,6 +23,27 @@ const addDays = (date, days) => {
   return next
 }
 
+const addMonths = (date, months) => new Date(date.getFullYear(), date.getMonth() + months, 1)
+
+const uniqueById = (items) => Array.from(new Map(items.map(item => [item.id, item])).values())
+
+const toMonthParam = (date) => `${date.getFullYear()}-${pad(date.getMonth() + 1)}`
+
+const parseCalendarMonth = (value) => {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}$/.test(value)) {
+    const today = new Date()
+    return new Date(today.getFullYear(), today.getMonth(), 1)
+  }
+
+  const [year, month] = value.split('-').map(Number)
+  if (!Number.isInteger(year) || !Number.isInteger(month) || month < 1 || month > 12) {
+    const today = new Date()
+    return new Date(today.getFullYear(), today.getMonth(), 1)
+  }
+
+  return new Date(year, month - 1, 1)
+}
+
 const diffDays = (a, b) => Math.round((startOfDay(a) - startOfDay(b)) / 86400000)
 
 const formatMonth = (date) =>
@@ -36,7 +58,7 @@ const formatAgo = (value, today) => {
   return `${Math.floor(days / 30)}mo ago`
 }
 
-const createEmptyDashboard = ({ error = null } = {}) => {
+const createEmptyDashboard = ({ error = null, calendarMonth = new Date(), holidays = [] } = {}) => {
   const today = startOfDay(new Date())
   return {
     error,
@@ -44,7 +66,8 @@ const createEmptyDashboard = ({ error = null } = {}) => {
     empty: true,
     kpis: [],
     priorityTasks: [],
-    calendar: buildCalendar([], today),
+    calendar: buildCalendar([], today, calendarMonth, holidays),
+    holidays,
     events: [],
     todayKey: toDateKey(today),
     heatmap: buildHeatmap([], today),
@@ -56,17 +79,24 @@ const createEmptyDashboard = ({ error = null } = {}) => {
   }
 }
 
-const buildCalendar = (tasks, today) => {
-  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1)
-  const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0)
+const buildCalendar = (tasks, today, calendarMonth = today, holidays = []) => {
+  const monthStart = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), 1)
+  const selectedMonthEnd = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0)
   const gridStart = addDays(monthStart, -monthStart.getDay())
-  const gridEnd = addDays(monthEnd, 6 - monthEnd.getDay())
+  const gridEnd = addDays(selectedMonthEnd, 6 - selectedMonthEnd.getDay())
   const todayKey = toDateKey(today)
   const month = monthStart.getMonth()
+  const holidaysByDate = holidays.reduce((map, holiday) => {
+    const next = map.get(holiday.date) || []
+    next.push(holiday)
+    map.set(holiday.date, next)
+    return map
+  }, new Map())
   const cells = []
 
   for (let date = new Date(gridStart); date <= gridEnd; date = addDays(date, 1)) {
     const key = toDateKey(date)
+    const dayHolidays = holidaysByDate.get(key) || []
     const completedTasks = tasks.filter(task => toDateKey(task.completed_at) === key)
     const movementCount = tasks.reduce((count, task) => {
       const movementDays = new Set([
@@ -86,6 +116,8 @@ const buildCalendar = (tasks, today) => {
       isToday: key === todayKey,
       movementCount,
       completedCount: completedTasks.length,
+      holidayCount: dayHolidays.length,
+      holidays: dayHolidays,
       completedTasks: completedTasks.map(task => ({
         id: task.id,
         summary: task.summary,
@@ -105,6 +137,11 @@ const buildCalendar = (tasks, today) => {
 
   return {
     label: formatMonth(monthStart),
+    monthKey: toMonthParam(monthStart),
+    previousMonthKey: toMonthParam(addMonths(monthStart, -1)),
+    nextMonthKey: toMonthParam(addMonths(monthStart, 1)),
+    todayMonthKey: toMonthParam(today),
+    holidayState: holidays[0]?.state || 'kuala-lumpur',
     weekdays: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
     weeks,
   }
@@ -149,7 +186,7 @@ const buildHeatmap = (tasks, today) => {
   }
 }
 
-const buildDashboardData = (projects, tasks, events = []) => {
+const buildDashboardData = (projects, tasks, events = [], { calendarMonth = new Date(), holidays = [] } = {}) => {
   const today = startOfDay(new Date())
   const weekStart = addDays(today, -((today.getDay() + 6) % 7))
   const weekStartKey = toDateKey(weekStart)
@@ -265,7 +302,7 @@ const buildDashboardData = (projects, tasks, events = []) => {
   return {
     error: null,
     generatedAt: new Date().toISOString(),
-    empty: projects.length === 0 && dashboardEvents.length === 0,
+    empty: projects.length === 0 && dashboardEvents.length === 0 && holidays.length === 0,
     todayKey,
     kpis: [
       { label: 'Active Tasks', value: activeTasks.length, detail: `${activeProjectIds.size} projects in motion`, tone: 'neutral' },
@@ -276,8 +313,9 @@ const buildDashboardData = (projects, tasks, events = []) => {
       { label: 'Active Projects', value: projects.length, detail: `${activeProjectIds.size} with open work`, tone: 'neutral' },
     ],
     priorityTasks,
+    holidays,
     events: dashboardEvents,
-    calendar: buildCalendar(enrichedTasks, today),
+    calendar: buildCalendar(enrichedTasks, today, calendarMonth, holidays),
     heatmap: buildHeatmap(enrichedTasks, today),
     portfolio,
     executionMix: {
@@ -287,7 +325,22 @@ const buildDashboardData = (projects, tasks, events = []) => {
   }
 }
 
-export default async function DashboardPage() {
+export default async function DashboardPage({ searchParams } = {}) {
+  const resolvedSearchParams = await searchParams
+  const calendarMonth = parseCalendarMonth(resolvedSearchParams?.month)
+  const holidayState = process.env.MALAYSIA_HOLIDAY_STATE || 'kuala-lumpur'
+  const today = startOfDay(new Date())
+  const upcomingEnd = addDays(today, 30)
+  const holidayYears = Array.from(new Set([
+    calendarMonth.getFullYear(),
+    today.getFullYear(),
+    upcomingEnd.getFullYear(),
+  ]))
+  const holidayResults = await Promise.all(
+    holidayYears.map(year => fetchMalaysiaHolidays({ state: holidayState, year }))
+  )
+  const holidays = uniqueById(holidayResults.flatMap(result => result.holidays))
+
   try {
     const supabase = await createServer()
 
@@ -323,8 +376,19 @@ export default async function DashboardPage() {
       tasks = taskRows || []
     }
 
-    return <DashboardView data={buildDashboardData(projects || [], tasks, events || [])} />
+    const dashboardData = buildDashboardData(projects || [], tasks, events || [], {
+      calendarMonth,
+      holidays,
+    })
+
+    return <DashboardView key={dashboardData.calendar.monthKey} data={dashboardData} />
   } catch (err) {
-    return <DashboardView data={createEmptyDashboard({ error: err.message })} />
+    const emptyDashboard = createEmptyDashboard({
+      error: err.message,
+      calendarMonth,
+      holidays,
+    })
+
+    return <DashboardView key={emptyDashboard.calendar.monthKey} data={emptyDashboard} />
   }
 }

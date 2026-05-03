@@ -5,7 +5,10 @@ import Link from 'next/link'
 import {
   AlertTriangle,
   ArrowRight,
+  CalendarDays,
   CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
   Circle,
   Clock,
   Edit3,
@@ -44,6 +47,14 @@ const dateFromKey = (key) => {
 
 const localDateKey = () => {
   const date = new Date()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${date.getFullYear()}-${month}-${day}`
+}
+
+const addDaysKey = (key, days) => {
+  const date = dateFromKey(key)
+  date.setDate(date.getDate() + days)
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
   return `${date.getFullYear()}-${month}-${day}`
@@ -93,10 +104,30 @@ function KpiStrip({ items }) {
   )
 }
 
-function FocusPane({ tasks, events, todayKey, onAddEvent, onEditEvent, onDeleteEvent }) {
-  const upcomingEvents = events
-    .filter(event => event.event_date >= todayKey)
-    .slice(0, 5)
+function FocusPane({ tasks, events, holidays, todayKey, onAddEvent, onEditEvent, onDeleteEvent }) {
+  const upcomingEndKey = addDaysKey(todayKey, 30)
+  const upcomingEvents = [
+    ...events
+      .filter(event => event.event_date >= todayKey && event.event_date <= upcomingEndKey)
+      .map(event => ({
+        ...event,
+        date: event.event_date,
+        type: 'event',
+      })),
+    ...(holidays || [])
+      .filter(holiday => holiday.date >= todayKey && holiday.date <= upcomingEndKey)
+      .map(holiday => ({
+        id: holiday.id,
+        title: holiday.title,
+        date: holiday.date,
+        type: 'holiday',
+        isMandatory: holiday.isMandatory,
+      })),
+  ].sort((a, b) => {
+    if (a.date !== b.date) return a.date.localeCompare(b.date)
+    if (a.type === b.type) return a.title.localeCompare(b.title)
+    return a.type === 'holiday' ? -1 : 1
+  })
 
   return (
     <div className="dashboard-left">
@@ -147,32 +178,34 @@ function FocusPane({ tasks, events, todayKey, onAddEvent, onEditEvent, onDeleteE
         ) : (
           <div className="dashboard-event-list">
             {upcomingEvents.map(event => (
-              <div key={event.id} className="dashboard-event-row">
-                <span className={`dashboard-event-dot event-${event.color}`} />
+              <div key={`${event.type}-${event.id}`} className={`dashboard-event-row ${event.type === 'holiday' ? 'is-holiday' : ''}`}>
+                <span className={`dashboard-event-dot ${event.type === 'holiday' ? 'event-holiday' : `event-${event.color}`}`} />
                 <div className="dashboard-event-copy">
                   <strong>{event.title}</strong>
-                  <span>{formatEventDate(event.event_date)}</span>
+                  <span>{formatEventDate(event.date)}{event.type === 'holiday' ? ' / Public holiday' : ''}</span>
                 </div>
-                <div className="dashboard-event-actions">
-                  <button
-                    type="button"
-                    className="btn-ghost"
-                    onClick={() => onEditEvent(event)}
-                    title="Edit event"
-                    aria-label="Edit event"
-                  >
-                    <Edit3 size={11} />
-                  </button>
-                  <button
-                    type="button"
-                    className="btn-ghost"
-                    onClick={() => onDeleteEvent(event)}
-                    title="Delete event"
-                    aria-label="Delete event"
-                  >
-                    <Trash2 size={11} />
-                  </button>
-                </div>
+                {event.type === 'event' && (
+                  <div className="dashboard-event-actions">
+                    <button
+                      type="button"
+                      className="btn-ghost"
+                      onClick={() => onEditEvent(event)}
+                      title="Edit event"
+                      aria-label="Edit event"
+                    >
+                      <Edit3 size={11} />
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-ghost"
+                      onClick={() => onDeleteEvent(event)}
+                      title="Delete event"
+                      aria-label="Delete event"
+                    >
+                      <Trash2 size={11} />
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -191,11 +224,41 @@ function CalendarPanel({ calendar, events, onDayClick }) {
       return map
     }, new Map())
   }, [events])
+  const monthHref = (monthKey) => monthKey === calendar.todayMonthKey ? '/dashboard' : `/dashboard?month=${monthKey}`
 
   return (
     <section className="dashboard-panel dashboard-calendar-panel">
-      <div className="dashboard-panel-hd">
-        <span className="dashboard-section-label">{calendar.label}</span>
+      <div className="dashboard-panel-hd dashboard-calendar-hd">
+        <div className="dashboard-calendar-heading">
+          <span className="dashboard-section-label">Calendar</span>
+          <strong className="dashboard-calendar-title">{calendar.label}</strong>
+        </div>
+        <div className="dashboard-calendar-nav" aria-label="Calendar navigation">
+          <Link
+            href={monthHref(calendar.previousMonthKey)}
+            className="dashboard-calendar-nav-btn"
+            title="Previous month"
+            aria-label="Previous month"
+          >
+            <ChevronLeft size={14} />
+          </Link>
+          <Link
+            href={monthHref(calendar.todayMonthKey)}
+            className="dashboard-calendar-nav-btn"
+            title="Current month"
+            aria-label="Current month"
+          >
+            <CalendarDays size={13} />
+          </Link>
+          <Link
+            href={monthHref(calendar.nextMonthKey)}
+            className="dashboard-calendar-nav-btn"
+            title="Next month"
+            aria-label="Next month"
+          >
+            <ChevronRight size={14} />
+          </Link>
+        </div>
       </div>
 
       <div className="dashboard-calendar">
@@ -220,8 +283,9 @@ function CalendarPanel({ calendar, events, onDayClick }) {
                     day.isToday ? 'is-today' : '',
                     day.movementCount > 0 ? `has-activity activity-${day.activityLevel}` : '',
                     dayEvents.length > 0 ? 'has-events' : '',
+                    day.holidayCount > 0 ? 'has-holidays' : '',
                   ].filter(Boolean).join(' ')}
-                  title={`${dayEvents.length} events, ${day.movementCount} movements, ${day.completedCount} completed`}
+                  title={`${day.holidayCount} holidays, ${dayEvents.length} events, ${day.movementCount} movements, ${day.completedCount} completed`}
                 >
                   <span className="dashboard-calendar-day-number">{day.day}</span>
                   {dayEvents.length > 0 && (
@@ -240,6 +304,7 @@ function CalendarPanel({ calendar, events, onDayClick }) {
                       </span>
                     )}
                     <span className="dashboard-calendar-metrics">
+                      {day.holidayCount > 0 && <strong />}
                       {dayEvents.length > 0 && <em />}
                       {day.completedCount > 0 && <b>{day.completedCount}</b>}
                     </span>
@@ -260,6 +325,7 @@ function CalendarPanel({ calendar, events, onDayClick }) {
 }
 
 function HeatmapPanel({ heatmap }) {
+  const mobileVisibleStart = Math.max(0, heatmap.weeks.length - 26)
   const monthLabels = useMemo(() => {
     return heatmap.weeks.map((week, i) => {
       if (!week.length) return ''
@@ -284,12 +350,15 @@ function HeatmapPanel({ heatmap }) {
       <div className="dashboard-heatmap-wrap">
         <div className="dashboard-heatmap-months">
           {monthLabels.map((label, i) => (
-            <span key={i}>{label}</span>
+            <span key={i} className={i < mobileVisibleStart ? 'is-mobile-hidden' : ''}>{label}</span>
           ))}
         </div>
         <div className="dashboard-heatmap">
           {heatmap.weeks.map((week, weekIndex) => (
-            <div key={weekIndex} className="dashboard-heatmap-week">
+            <div
+              key={weekIndex}
+              className={`dashboard-heatmap-week ${weekIndex < mobileVisibleStart ? 'is-mobile-hidden' : ''}`}
+            >
               {week.map(day => (
                 <span
                   key={day.key}
@@ -514,6 +583,27 @@ function DayDetailModal({ day, events, onClose, onAddEvent, onEditEvent, onDelet
         </div>
 
         <div className="dashboard-day-modal-body">
+          {day.holidays.length > 0 && (
+            <section>
+              <div className="dashboard-day-section-header">
+                <h3>Public Holidays</h3>
+                <span>{day.holidays.length.toString().padStart(2, '0')}</span>
+              </div>
+
+              <div className="dashboard-holiday-list">
+                {day.holidays.map(holiday => (
+                  <div key={holiday.id} className="dashboard-holiday-row">
+                    <span className="dashboard-holiday-dot" />
+                    <div>
+                      <strong>{holiday.title}</strong>
+                      <span>{holiday.isMandatory ? 'Mandatory holiday' : holiday.dayOfWeek || 'Malaysia public holiday'}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
           <section>
             <div className="dashboard-day-section-header">
               <h3>Events</h3>
@@ -682,6 +772,7 @@ export default function DashboardView({ data }) {
             <FocusPane
               tasks={dashboard.priorityTasks}
               events={events}
+              holidays={dashboard.holidays || []}
               todayKey={todayKey}
               onAddEvent={openAddEvent}
               onEditEvent={openEditEvent}

@@ -26,13 +26,13 @@ export default function ListView({ projects, tasks, onTaskClick, onTaskPatch, on
   const headers = [
     { label: 'Status', align: 'center' },
     { label: 'Task', align: 'left' },
-    { label: 'Priority', align: 'left' },
     { label: 'Due Date', align: 'left' },
+    { label: 'Priority', align: 'left' },
     { label: 'Actions', align: 'right' }
   ]
 
   return (
-    <div className="list-view" style={{
+    <div className="list-view task-list-view" style={{
       padding: '0 32px 32px 32px',
       height: 'calc(100vh - 64px)',
       overflowY: 'auto',
@@ -40,7 +40,7 @@ export default function ListView({ projects, tasks, onTaskClick, onTaskPatch, on
       flexDirection: 'column',
     }}>
       {/* Global List Header */}
-      <div className="list-view-header" style={{
+      <div className="list-view-header task-list-header" style={{
         display: 'grid',
         gridTemplateColumns: '48px minmax(300px, 2fr) 120px 140px 80px',
         padding: '0 16px 10px 16px',
@@ -197,10 +197,10 @@ function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewComplete
       )}
 
       {/* Flat section — no card wrapper */}
-      <div className="project-section">
+      <div className="project-section task-project-section">
         {/* Section Header */}
         <div
-          className="project-section-header"
+          className="project-section-header task-project-header"
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -237,7 +237,7 @@ function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewComplete
                 fontWeight: '700',
                 color: 'var(--text)',
                 letterSpacing: '-0.01em',
-                cursor: 'text',
+                cursor: 'pointer',
               }}
             >
               {project.name}
@@ -392,7 +392,7 @@ function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewComplete
               />
             ))}
             {tasks.length === 0 && (
-              <div style={{
+              <div className="task-empty-row" style={{
                 padding: '14px 16px 14px 64px',
                 fontSize: '11px',
                 color: 'var(--text-disabled)',
@@ -443,9 +443,9 @@ function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewComplete
                   <Plus size={14} color="var(--accent)" />
                 </div>
                 <div>
-                  <div style={{ fontSize: '13px', fontWeight: '700', letterSpacing: '-0.01em', color: 'var(--text)' }}>New Task Allocation</div>
+                  <div style={{ fontSize: '13px', fontWeight: '700', letterSpacing: '-0.01em', color: 'var(--text)' }}>New task</div>
                   <div style={{ fontSize: '10px', color: 'var(--text-disabled)', fontFamily: 'var(--font-mono)', letterSpacing: '0.08em', marginTop: '2px' }}>
-                    {project.name.toUpperCase()}
+                    {project.name}
                   </div>
                 </div>
               </div>
@@ -596,9 +596,9 @@ function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewComplete
                       fontSize: '10px', fontWeight: '800', fontFamily: 'var(--font-mono)', letterSpacing: '0.06em',
                       color: newTaskUrgent && newTaskImportant ? 'var(--error)' : newTaskUrgent ? 'var(--warning)' : 'var(--accent)'
                     }}>
-                      {newTaskUrgent && newTaskImportant ? 'QUADRANT I — DO FIRST'
-                        : newTaskUrgent ? 'QUADRANT III — DELEGATE'
-                        : 'QUADRANT II — SCHEDULE'}
+                      {newTaskUrgent && newTaskImportant ? 'Do first'
+                        : newTaskUrgent ? 'Fast track'
+                        : 'High impact'}
                     </span>
                   </div>
                 )}
@@ -637,6 +637,7 @@ function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewComplete
 
 function TaskRow({ task, onTaskClick, onTaskPatch, isExpanded, onToggleExpand, onTaskDeleted }) {
   const isDone = task.status === 'Done'
+  const priorityTone = task.urgent && task.important ? 'critical' : task.urgent ? 'urgent' : task.important ? 'important' : 'normal'
   const [swipeOffset, setSwipeOffset] = useState(0)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -723,7 +724,7 @@ function TaskRow({ task, onTaskClick, onTaskPatch, isExpanded, onToggleExpand, o
   return (
     <>
       <div
-        className="task-row-container"
+        className={`task-row-container task-row-${priorityTone} ${isExpanded ? 'is-expanded' : ''} ${isDone ? 'is-done' : ''}`}
         style={{
           position: 'relative',
           borderBottom: '1px solid var(--border)',
@@ -963,7 +964,7 @@ function TaskRow({ task, onTaskClick, onTaskPatch, isExpanded, onToggleExpand, o
                 <div>
                   <div style={{ fontSize: '13px', fontWeight: '700', letterSpacing: '-0.01em', color: 'var(--text)' }}>Delete Task</div>
                   <div style={{ fontSize: '10px', color: 'var(--text-disabled)', fontFamily: 'var(--font-mono)', letterSpacing: '0.08em', marginTop: '2px' }}>
-                    IRREVERSIBLE ACTION
+                    Permanent action
                   </div>
                 </div>
               </div>

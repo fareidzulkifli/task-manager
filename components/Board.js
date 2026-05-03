@@ -238,25 +238,17 @@ export default function Board({ orgId }) {
   if (loading) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', gap: '16px', background: 'var(--background)' }}>
       <Loader2 className="animate-spin" size={20} color="var(--accent)" />
-      <span style={{ color: 'var(--text-disabled)', fontWeight: '600', fontFamily: 'monospace', fontSize: '12px', letterSpacing: '0.1em' }}>INITIALIZING_CORE_SYSTEM...</span>
+      <span style={{ color: 'var(--text-muted)', fontWeight: '600', fontSize: '13px' }}>Loading workspace...</span>
     </div>
   )
 
-  if (error) return <div style={{ padding: '40px', color: 'var(--error)', fontFamily: 'monospace' }}>SYSTEM_ERROR: {error}</div>
+  if (error) return <div style={{ padding: '40px', color: 'var(--error)', fontWeight: 600 }}>Unable to load workspace: {error}</div>
 
   return (
-    <div className="board-view" style={{ background: 'var(--background)' }}>
+    <div className="board-view task-workspace">
       {/* Header */}
-      <header className="board-header" style={{
-        height: '64px',
-        padding: '0 32px',
-        background: 'var(--surface)',
-        borderBottom: '1px solid var(--border-strong)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between'
-      }}>
-        <div className="board-header-left" style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+      <header className="board-header task-board-header">
+        <div className="board-header-left task-board-header-left">
           <button
             className="mobile-menu-btn btn-ghost"
             onClick={handleToggleSidebar}
@@ -265,41 +257,40 @@ export default function Board({ orgId }) {
             <PanelLeft size={20} />
           </button>
 
-          <div className="board-title-group" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div className="board-title-group task-board-title-group">
             <Database size={18} color="var(--accent)" className="desktop-only-icon" />
-            <h1 className="board-title" style={{ fontSize: '18px', fontWeight: '700', letterSpacing: '-0.04em', color: 'var(--text)' }}>
-              {org?.name?.toUpperCase()}
+            <h1 className="board-title task-board-title">
+              {org?.name}
             </h1>
           </div>
 
-          <div className="header-divider" style={{ height: '24px', width: '1px', background: 'var(--border-strong)' }}></div>
+          <div className="header-divider task-header-divider"></div>
 
-          <div className="board-stats" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: '700', color: 'var(--text-disabled)', fontFamily: 'monospace' }}>
+          <div className="board-stats task-board-stats">
+            <div className="task-board-stat">
               <Layers size={14} />
-              <span>PROJECTS: {projects.length.toString().padStart(2, '0')}</span>
+              <span>{projects.length.toString().padStart(2, '0')} projects</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: '700', color: 'var(--text-disabled)', fontFamily: 'monospace' }}>
+            <div className="task-board-stat">
               <Activity size={14} />
-              <span>Active Tasks: {tasks.filter(t => t.status !== 'Done').length.toString().padStart(3, '0')}</span>
+              <span>{tasks.filter(t => t.status !== 'Done').length.toString().padStart(3, '0')} active tasks</span>
             </div>
           </div>
         </div>
 
-        <div className="board-header-right" style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <div style={{ position: 'relative' }}>
-            <Search size={14} style={{ position: 'absolute', left: '12px', top: '11px', color: 'var(--text-disabled)' }} />
+        <div className="board-header-right task-board-toolbar">
+          <div className="task-search-wrap">
+            <Search size={14} className="task-search-icon" />
             <input
               type="text"
-              placeholder="SEARCH"
-              style={{ width: '240px', paddingLeft: '36px', height: '36px', background: 'var(--background)', fontSize: '11px', fontFamily: 'monospace', fontWeight: '600' }}
+              placeholder="Search tasks"
+              className="task-search-input"
             />
           </div>
 
           <button
             onClick={handleOpenArchivedProjects}
-            className="btn-ghost board-archive-btn"
-            style={{ height: '36px', border: '1px solid var(--border-strong)', background: 'var(--background)', padding: '0 14px', fontSize: '11px', fontWeight: '700' }}
+            className="btn-ghost board-archive-btn task-toolbar-btn"
           >
             <Archive size={14} />
             <span>Archived</span>
@@ -307,8 +298,7 @@ export default function Board({ orgId }) {
 
           <button
             onClick={handleCreateProject}
-            className="btn-primary"
-            style={{ height: '36px', padding: '0 16px', fontSize: '11px', fontWeight: '700' }}
+            className="btn-primary task-toolbar-primary"
           >
             <Plus size={14} />
             Add Project
@@ -348,7 +338,7 @@ export default function Board({ orgId }) {
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <History size={18} color="var(--text-muted)" />
                 <h3 style={{ fontSize: '14px', fontWeight: '700', letterSpacing: '-0.02em' }}>
-                  COMPLETED ARCHIVE: {completedTasksProject.name.toUpperCase()}
+                  Completed Tasks: {completedTasksProject.name}
                 </h3>
               </div>
               <button onClick={() => setCompletedTasksProject(null)} className="btn-ghost" style={{ padding: '6px' }}>
@@ -436,7 +426,7 @@ export default function Board({ orgId }) {
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <Archive size={18} color="var(--text-muted)" />
                 <h3 style={{ fontSize: '14px', fontWeight: '700', letterSpacing: '-0.02em' }}>
-                  ARCHIVED PROJECTS: {org?.name?.toUpperCase()}
+                  Archived Projects: {org?.name}
                 </h3>
               </div>
               <button onClick={() => setIsArchiveModalOpen(false)} className="btn-ghost" style={{ padding: '6px' }}>
@@ -499,7 +489,7 @@ export default function Board({ orgId }) {
                         {project.goal || project.description_markdown || 'No description available.'}
                       </div>
                       <div style={{ fontSize: '10px', color: 'var(--text-disabled)', fontFamily: 'var(--font-mono)', marginTop: '8px' }}>
-                        ARCHIVED {project.archived_at ? new Date(project.archived_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'DATE UNKNOWN'}
+                        Archived {project.archived_at ? new Date(project.archived_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'date unknown'}
                       </div>
                     </div>
                     <button
@@ -544,7 +534,7 @@ export default function Board({ orgId }) {
                   <Layers size={16} color="var(--accent)" />
                 </div>
                 <h3 style={{ fontSize: '14px', fontWeight: '700', letterSpacing: '-0.02em', color: 'var(--text)' }}>
-                  INITIATE NEW PROJECT
+                  Create Project
                 </h3>
               </div>
               <button onClick={() => setIsProjectModalOpen(false)} className="btn-ghost" style={{ padding: '6px' }}>
@@ -559,14 +549,14 @@ export default function Board({ orgId }) {
                   color: 'var(--text-disabled)', textTransform: 'uppercase',
                   letterSpacing: '0.15em', marginBottom: '10px'
                 }}>
-                  Project Designation
+                  Project name
                 </label>
                 <input
                   autoFocus
                   value={newProjectName}
                   onChange={(e) => setNewProjectName(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleConfirmCreateProject()}
-                  placeholder="e.g. Q1_MARKETING_SPRINT"
+                  placeholder="e.g. Website refresh"
                   style={{
                     fontSize: '14px',
                     fontWeight: '600',
@@ -578,7 +568,7 @@ export default function Board({ orgId }) {
                   }}
                 />
                 <div style={{ fontSize: '11px', color: 'var(--text-disabled)', marginTop: '8px', lineHeight: '1.4' }}>
-                  Assign a unique identifier for this project stream. This will serve as the primary container for all related tasks and assets.
+                  Create a focused project stream for related tasks and assets.
                 </div>
               </div>
             </div>

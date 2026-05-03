@@ -20,7 +20,7 @@ import {
 } from 'lucide-react'
 import ProjectModal from './ProjectModal'
 
-export default function ListView({ projects, tasks, onTaskClick, onTaskPatch, onViewCompleted, onTaskCreated, onTaskDeleted, onProjectDeleted }) {
+export default function ListView({ projects, tasks, onTaskClick, onTaskPatch, onViewCompleted, onTaskCreated, onTaskDeleted, onProjectDeleted, onProjectUpdated, onProjectArchived }) {
   const [expandedTaskId, setExpandedTaskId] = useState(null)
 
   const headers = [
@@ -86,6 +86,8 @@ export default function ListView({ projects, tasks, onTaskClick, onTaskPatch, on
             onTaskCreated={onTaskCreated}
             onTaskDeleted={onTaskDeleted}
             onProjectDeleted={onProjectDeleted}
+            onProjectUpdated={onProjectUpdated}
+            onProjectArchived={onProjectArchived}
           />
         )
       })}
@@ -107,7 +109,7 @@ export default function ListView({ projects, tasks, onTaskClick, onTaskPatch, on
   )
 }
 
-function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewCompleted, expandedTaskId, onToggleExpand, onTaskCreated, onTaskDeleted, onProjectDeleted }) {
+function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewCompleted, expandedTaskId, onToggleExpand, onTaskCreated, onTaskDeleted, onProjectDeleted, onProjectUpdated, onProjectArchived }) {
   const [isExpanded, setIsExpanded] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showMenu, setShowMenu] = useState(false)
@@ -182,7 +184,15 @@ function ProjectGroup({ project, tasks, onTaskClick, onTaskPatch, onViewComplete
         <ProjectModal
           project={detailProject}
           onClose={() => setDetailProject(null)}
-          onProjectUpdate={(updated) => setDetailProject(updated)}
+          onProjectUpdate={(updated) => {
+            setDetailProject(updated)
+            onProjectUpdated?.(updated)
+          }}
+          onProjectArchived={(archivedProject) => {
+            setDetailProject(null)
+            onProjectArchived?.(archivedProject)
+          }}
+          pendingTaskCount={tasks.length}
         />
       )}
 

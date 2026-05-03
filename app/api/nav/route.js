@@ -11,8 +11,12 @@ export async function GET() {
       { data: taskCounts, error: tasksError },
     ] = await Promise.all([
       supabase.from('organizations').select('*').order('order_index', { ascending: true }),
-      supabase.from('projects').select('*').order('order_index', { ascending: true }),
-      supabase.from('tasks').select('project_id').neq('status', 'Done'),
+      supabase.from('projects').select('*').is('archived_at', null).order('order_index', { ascending: true }),
+      supabase
+        .from('tasks')
+        .select('project_id, projects!inner(archived_at)')
+        .is('projects.archived_at', null)
+        .neq('status', 'Done'),
     ])
 
     if (orgsError) throw orgsError

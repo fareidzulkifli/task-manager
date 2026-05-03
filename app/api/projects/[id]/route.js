@@ -33,7 +33,8 @@ export async function PATCH(req, { params }) {
       project_type, 
       ai_instructions, 
       current_focus, 
-      target_date 
+      target_date,
+      archived
     } = body
 
     const updateData = {}
@@ -46,6 +47,24 @@ export async function PATCH(req, { params }) {
     if (ai_instructions !== undefined) updateData.ai_instructions = ai_instructions
     if (current_focus !== undefined) updateData.current_focus = current_focus
     if (target_date !== undefined) updateData.target_date = target_date
+    if (archived === true) {
+      const { count, error: pendingError } = await supabase
+        .from('tasks')
+        .select('id', { count: 'exact', head: true })
+        .eq('project_id', id)
+        .neq('status', 'Done')
+
+      if (pendingError) throw pendingError
+      if (count > 0) {
+        return NextResponse.json(
+          { error: 'Projects can only be archived when all tasks are done.' },
+          { status: 400 }
+        )
+      }
+      updateData.archived_at = new Date().toISOString()
+    } else if (archived === false) {
+      updateData.archived_at = null
+    }
 
     const { data, error } = await supabase
       .from('projects')

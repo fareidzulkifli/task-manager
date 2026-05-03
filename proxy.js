@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 
-export async function middleware(request) {
+export async function proxy(request) {
   let response = NextResponse.next({
     request: {
       headers: request.headers,
@@ -33,7 +33,7 @@ export async function middleware(request) {
     }
   )
 
-  // Using getSession() instead of getUser() in middleware avoids making a network request 
+  // Using getSession() instead of getUser() in proxy avoids making a network request
   // to Supabase on every single page load, saving API quota for the free tier.
   const {
     data: { session },

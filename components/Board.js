@@ -10,13 +10,13 @@ import {
   Check,
   Database,
   Activity,
-  Cpu,
   Layers,
-  Zap,
   History,
   RefreshCcw,
   PanelLeft,
-  Maximize2
+  Maximize2,
+  Archive,
+  ArchiveRestore
 } from 'lucide-react'
 
 // Priority score: urgent+important(0) > urgent(1) > important(2) > none(3)
@@ -43,9 +43,12 @@ export default function Board({ orgId }) {
   const [error, setError] = useState(null)
   const [selectedTask, setSelectedTask] = useState(null)
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false)
-  const [aiSummary, setAiSummary] = useState(null)
-  const [aiLoading, setAiLoading] = useState(false)
   const [completedTasksProject, setCompletedTasksProject] = useState(null)
+  const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false)
+  const [archivedProjects, setArchivedProjects] = useState([])
+  const [archivedLoading, setArchivedLoading] = useState(false)
+  const [archivedError, setArchivedError] = useState(null)
+  const [restoringProjectId, setRestoringProjectId] = useState(null)
 
   // New Project Modal State
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false)
@@ -65,35 +68,6 @@ export default function Board({ orgId }) {
 
   const handleToggleSidebar = () => {
     window.dispatchEvent(new Event('toggle-sidebar'))
-  }
-
-  const handleSummarizeOrg = async () => {
-    try {
-      setAiLoading(true)
-      const summaries = await Promise.all(projects.map(async (project) => {
-        const projectTasks = tasks.filter(t => t.project_id === project.id)
-        const res = await fetch('/api/ai/project-summarize', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ project_context: project, tasks: projectTasks })
-        })
-        const data = await res.json()
-        return { name: project.name, summary: data.projectSummary }
-      }))
-
-      const res = await fetch('/api/ai/org-summarize', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ org_name: org.name, project_summaries: summaries })
-      })
-      const data = await res.json()
-      if (data.error) throw new Error(data.error)
-      setAiSummary({ type: 'org', content: data.orgSummary })
-    } catch (err) {
-      alert('AI Error: ' + err.message)
-    } finally {
-      setAiLoading(false)
-    }
   }
 
   const fetchData = async (isInitial = false) => {
@@ -137,6 +111,70 @@ export default function Board({ orgId }) {
   const handleProjectDeleted = (projectId) => {
     setProjects(prev => prev.filter(p => p.id !== projectId))
     setTasks(prev => prev.filter(t => t.project_id !== projectId))
+  }
+
+  const handleProjectUpdated = (updatedProject) => {
+    setProjects(prev => prev.map(p => p.id === updatedProject.id ? updatedProject : p))
+  }
+
+  const handleProjectArchived = (archivedProject) => {
+    setProjects(prev => prev.filter(p => p.id !== archivedProject.id))
+    setTasks(prev => prev.filter(t => t.project_id !== archivedProject.id))
+    setCompletedTasksProject(prev => prev?.id === archivedProject.id ? null : prev)
+  }
+
+  const fetchArchivedProjects = async () => {
+    try {
+      setArchivedLoading(true)
+      setArchivedError(null)
+      const res = await fetch(`/api/projects?org_id=${orgId}&archived=true`)
+      const data = await res.json()
+      if (data.error) throw new Error(data.error)
+      setArchivedProjects(data)
+    } catch (err) {
+      setArchivedError(err.message)
+    } finally {
+      setArchivedLoading(false)
+    }
+  }
+
+  const handleOpenArchivedProjects = () => {
+    setIsArchiveModalOpen(true)
+    fetchArchivedProjects()
+  }
+
+  const handleRestoreProject = async (projectId) => {
+    try {
+      setRestoringProjectId(projectId)
+      const res = await fetch(`/api/projects/${projectId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ archived: false })
+      })
+      const restoredProject = await res.json()
+      if (restoredProject.error) throw new Error(restoredProject.error)
+
+      setArchivedProjects(prev => prev.filter(p => p.id !== restoredProject.id))
+      setProjects(prev => {
+        const next = [...prev.filter(p => p.id !== restoredProject.id), restoredProject]
+        return next.sort((a, b) => (a.order_index || 0) - (b.order_index || 0))
+      })
+
+      const tasksRes = await fetch(`/api/tasks?project_id=${restoredProject.id}`)
+      const projectTasks = await tasksRes.json()
+      if (Array.isArray(projectTasks)) {
+        setTasks(prev => [
+          ...prev.filter(t => t.project_id !== restoredProject.id),
+          ...projectTasks
+        ])
+      }
+
+      window.dispatchEvent(new Event('taskUpdated'))
+    } catch (err) {
+      alert('Error restoring project: ' + err.message)
+    } finally {
+      setRestoringProjectId(null)
+    }
   }
 
   const openTaskModal = (task) => {
@@ -259,12 +297,12 @@ export default function Board({ orgId }) {
           </div>
 
           <button
-            onClick={handleSummarizeOrg}
-            className="btn-ghost"
-            style={{ height: '36px', border: '1px solid var(--border-strong)', background: 'var(--background)', padding: '0 16px', fontSize: '11px', fontWeight: '700' }}
+            onClick={handleOpenArchivedProjects}
+            className="btn-ghost board-archive-btn"
+            style={{ height: '36px', border: '1px solid var(--border-strong)', background: 'var(--background)', padding: '0 14px', fontSize: '11px', fontWeight: '700' }}
           >
-            <Zap size={14} color="var(--accent)" />
-            AI Synthesis
+            <Archive size={14} />
+            <span>Archived</span>
           </button>
 
           <button
@@ -278,39 +316,6 @@ export default function Board({ orgId }) {
         </div>
       </header>
 
-      {/* AI Intelligence Overlay */}
-      {aiSummary && (
-        <div className="modal-overlay" style={{ backdropFilter: 'blur(12px)', background: 'rgba(0,0,0,0.8)' }}>
-          <div className="modal-content" style={{ maxWidth: '900px', border: '1px solid var(--accent-muted)', padding: '0', overflow: 'hidden' }}>
-            <div style={{ padding: '16px 24px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--surface)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <Cpu size={20} color="var(--accent)" />
-                <h2 style={{ fontSize: '13px', fontWeight: '800', fontFamily: 'monospace', letterSpacing: '0.1em' }}>
-                  SYSTEM_OVERVIEW_SYNTHESIS
-                </h2>
-              </div>
-              <button onClick={() => setAiSummary(null)} className="btn-ghost" style={{ padding: '6px' }}>
-                <X size={18} />
-              </button>
-            </div>
-            <div style={{ padding: '32px', background: 'var(--background)' }}>
-              <div style={{
-                lineHeight: '1.8',
-                background: 'rgba(0,0,0,0.3)',
-                padding: '40px',
-                borderRadius: '8px',
-                border: '1px solid var(--border-strong)',
-                fontSize: '15px',
-                color: 'var(--text-secondary)',
-                fontFamily: 'Inter, sans-serif'
-              }}>
-                <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit' }}>{aiSummary.content}</pre>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Main List Area */}
       <ListView
         projects={projects}
@@ -321,6 +326,8 @@ export default function Board({ orgId }) {
         onTaskCreated={handleTaskCreated}
         onTaskDeleted={handleTaskDeleted}
         onProjectDeleted={handleProjectDeleted}
+        onProjectUpdated={handleProjectUpdated}
+        onProjectArchived={handleProjectArchived}
       />
 
       {/* Completed Tasks Modal */}
@@ -405,6 +412,107 @@ export default function Board({ orgId }) {
                 <div style={{ textAlign: 'center', color: 'var(--text-disabled)', fontSize: '12px', padding: '32px' }}>
                   No completed tasks found in archive.
                 </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Archived Projects Modal */}
+      {isArchiveModalOpen && (
+        <div
+          className="modal-overlay"
+          onClick={(e) => e.target.classList.contains('modal-overlay') && setIsArchiveModalOpen(false)}
+        >
+          <div className="modal-content" style={{ width: '680px', maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
+            <div style={{
+              padding: '20px 24px',
+              borderBottom: '1px solid var(--border)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              background: 'var(--surface-alt)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <Archive size={18} color="var(--text-muted)" />
+                <h3 style={{ fontSize: '14px', fontWeight: '700', letterSpacing: '-0.02em' }}>
+                  ARCHIVED PROJECTS: {org?.name?.toUpperCase()}
+                </h3>
+              </div>
+              <button onClick={() => setIsArchiveModalOpen(false)} className="btn-ghost" style={{ padding: '6px' }}>
+                <X size={16} />
+              </button>
+            </div>
+
+            <div style={{ overflowY: 'auto', padding: '24px', flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {archivedLoading ? (
+                <div style={{ display: 'flex', justifyContent: 'center', padding: '32px', color: 'var(--text-muted)' }}>
+                  <Loader2 className="animate-spin" size={18} />
+                </div>
+              ) : archivedError ? (
+                <div style={{
+                  padding: '18px',
+                  border: '1px solid var(--error)',
+                  borderRadius: '8px',
+                  color: 'var(--error)',
+                  background: 'var(--error-muted)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '12px'
+                }}>
+                  <span style={{ fontSize: '12px' }}>{archivedError}</span>
+                  <button onClick={fetchArchivedProjects} className="btn-ghost" style={{ fontSize: '11px', padding: '6px 10px' }}>
+                    Retry
+                  </button>
+                </div>
+              ) : archivedProjects.length === 0 ? (
+                <div style={{ textAlign: 'center', color: 'var(--text-disabled)', fontSize: '12px', padding: '36px' }}>
+                  No archived projects found.
+                </div>
+              ) : (
+                archivedProjects.map(project => (
+                  <div key={project.id} style={{
+                    padding: '16px 18px',
+                    background: 'var(--surface)',
+                    border: '1px solid var(--border-strong)',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '16px'
+                  }}>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text)', marginBottom: '4px' }}>
+                        {project.name}
+                      </div>
+                      <div style={{
+                        fontSize: '12px',
+                        color: 'var(--text-muted)',
+                        lineHeight: '1.5',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical'
+                      }}>
+                        {project.goal || project.description_markdown || 'No description available.'}
+                      </div>
+                      <div style={{ fontSize: '10px', color: 'var(--text-disabled)', fontFamily: 'var(--font-mono)', marginTop: '8px' }}>
+                        ARCHIVED {project.archived_at ? new Date(project.archived_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'DATE UNKNOWN'}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleRestoreProject(project.id)}
+                      disabled={restoringProjectId === project.id}
+                      className="btn-ghost"
+                      style={{ padding: '7px 12px', fontSize: '11px', color: 'var(--accent)', flexShrink: 0 }}
+                    >
+                      {restoringProjectId === project.id ? <Loader2 size={13} className="animate-spin" /> : <ArchiveRestore size={13} />}
+                      Restore
+                    </button>
+                  </div>
+                ))
               )}
             </div>
           </div>

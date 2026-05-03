@@ -33,6 +33,7 @@ export async function PATCH(req, { params }) {
     if (important !== undefined) updateData.important = !!important
     if (due_date !== undefined) updateData.due_date = due_date
     if (project_id !== undefined) updateData.project_id = project_id
+    updateData.updated_at = new Date().toISOString()
 
     const { data, error } = await supabase
       .from('tasks')

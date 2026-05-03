@@ -120,59 +120,48 @@ export default function Sidebar() {
         style={{ background: 'var(--surface)' }}
       >
         <div className="sidebar-header">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: isCollapsed ? 'center' : 'space-between' }}>
-            <Link href="/task/dashboard" className="sidebar-logo">
+          <div className="sidebar-header-main" style={{ justifyContent: isCollapsed ? 'center' : 'space-between' }}>
+            <Link href="/dashboard" className="sidebar-logo">
               <div className="sidebar-logo-icon">
                 <Layers size={14} color="#fff" strokeWidth={3} />
               </div>
               <span style={{ color: 'var(--text)' }}>Private Workspace</span>
             </Link>
-            <button
-              className="btn-ghost mobile-close-btn"
-              onClick={() => {
-                if (window.innerWidth <= 768) {
-                  setIsMobileOpen(false)
-                } else {
-                  setIsCollapsed(prev => {
-                    const next = !prev
-                    localStorage.setItem('sidebar-collapsed', String(next))
-                    return next
-                  })
-                }
-              }}
-              style={{ padding: '4px' }}
-              title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            >
-              <ChevronRight size={18} style={{ transform: (isMobileOpen || !isCollapsed) ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.25s' }} />
-            </button>
+            <div className="sidebar-header-actions">
+              <button
+                onClick={toggleTheme}
+                className="btn-ghost sidebar-theme-btn"
+                title={theme === 'dark' ? 'Switch to Technical Light' : 'Switch to Industrial Dark'}
+                aria-label={theme === 'dark' ? 'Switch to Technical Light' : 'Switch to Industrial Dark'}
+              >
+                {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
+              </button>
+
+              <button
+                className="btn-ghost mobile-close-btn"
+                onClick={() => {
+                  if (window.innerWidth <= 768) {
+                    setIsMobileOpen(false)
+                  } else {
+                    setIsCollapsed(prev => {
+                      const next = !prev
+                      localStorage.setItem('sidebar-collapsed', String(next))
+                      return next
+                    })
+                  }
+                }}
+                style={{ padding: '4px' }}
+                title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              >
+                <ChevronRight size={18} style={{ transform: (isMobileOpen || !isCollapsed) ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.25s' }} />
+              </button>
+            </div>
           </div>
-          
-          <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
-          {!isCollapsed && (
-            <button
-              onClick={handleCreateOrg}
-              className="btn-ghost"
-              style={{ flexGrow: 1, justifyContent: 'flex-start', padding: '8px 12px', fontSize: '11px', fontWeight: '700', fontFamily: 'monospace' }}
-            >
-              <Plus size={14} />
-              <span>Create ORG</span>
-            </button>
-          )}
-          
-          <button
-            onClick={toggleTheme}
-            className="btn-ghost"
-            style={{ padding: '8px', borderRadius: '8px', border: '1px solid var(--border-strong)' }}
-            title={theme === 'dark' ? 'Switch to Technical Light' : 'Switch to Industrial Dark'}
-          >
-            {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
-          </button>
         </div>
-      </div>
 
       <nav className="sidebar-nav">
         <div className="nav-section">
-          <Link href="/task/dashboard" className={`sidebar-link ${pathname === '/task/dashboard' ? 'active' : ''}`} style={{ fontSize: '12px', fontWeight: '700', fontFamily: 'monospace' }}>
+          <Link href="/dashboard" className={`sidebar-link ${pathname === '/dashboard' ? 'active' : ''}`} style={{ fontSize: '12px', fontWeight: '700', fontFamily: 'monospace' }}>
             <LayoutDashboard size={16} />
             <span>Dashboard</span>
           </Link>
@@ -183,7 +172,18 @@ export default function Sidebar() {
         </div>
 
         <div className="nav-section" style={{ marginTop: '24px' }}>
-          <h3 className="nav-section-title" style={{ fontSize: '10px', fontWeight: '800', letterSpacing: '0.15em' }}>Task Manager</h3>
+          <div className="sidebar-section-header">
+            <h3 className="nav-section-title" style={{ fontSize: '10px', fontWeight: '800', letterSpacing: '0.15em' }}>Task Manager</h3>
+            <button
+              onClick={handleCreateOrg}
+              className="btn-ghost sidebar-section-action"
+              title="Create organization"
+              aria-label="Create organization"
+            >
+              <Plus size={13} />
+              <span>Create ORG</span>
+            </button>
+          </div>
           {loading ? (
             <div style={{ padding: '12px', color: 'var(--text-disabled)', fontSize: '10px', fontFamily: 'monospace' }}>FETCHING_NODES...</div>
           ) : (

@@ -6,11 +6,15 @@ export async function GET(req) {
     const supabase = await createServer()
     const { searchParams } = new URL(req.url)
     const orgId = searchParams.get('org_id')
+    const archived = searchParams.get('archived') === 'true'
 
     let query = supabase
       .from('projects')
       .select('*')
-      .order('order_index', { ascending: true })
+
+    query = archived
+      ? query.not('archived_at', 'is', null).order('archived_at', { ascending: false })
+      : query.is('archived_at', null).order('order_index', { ascending: true })
 
     if (orgId) {
       query = query.eq('org_id', orgId)

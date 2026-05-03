@@ -20,6 +20,7 @@ export async function GET() {
           slug
         )
       `)
+      .is('archived_at', null)
       .limit(20)
 
     if (projectsError) throw projectsError

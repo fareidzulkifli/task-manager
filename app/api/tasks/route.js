@@ -10,13 +10,14 @@ export async function GET(req) {
 
     let query = supabase
       .from('tasks')
-      .select('*, projects!inner(org_id)')
+      .select('*, projects!inner(org_id, archived_at)')
       .order('order_index', { ascending: true })
 
     if (projectId) {
       query = query.eq('project_id', projectId)
     } else if (orgId) {
       query = query.eq('projects.org_id', orgId)
+      query = query.is('projects.archived_at', null)
     }
 
     const { data, error } = await query

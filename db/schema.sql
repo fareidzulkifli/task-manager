@@ -31,8 +31,11 @@ CREATE TABLE IF NOT EXISTS projects (
     project_type project_type DEFAULT 'Work',
     ai_instructions TEXT,
     current_focus TEXT,
-    target_date DATE
+    target_date DATE,
+    archived_at TIMESTAMP WITH TIME ZONE
 );
+
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS archived_at TIMESTAMP WITH TIME ZONE;
 
 -- Task Status Enum
 DO $$ BEGIN
@@ -51,9 +54,23 @@ CREATE TABLE IF NOT EXISTS tasks (
     urgent BOOLEAN DEFAULT FALSE,
     important BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     due_date DATE,
     order_index FLOAT NOT NULL,
     completed_at TIMESTAMP WITH TIME ZONE
+);
+
+ALTER TABLE tasks ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
+
+-- Dashboard Events
+CREATE TABLE IF NOT EXISTS dashboard_events (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    title TEXT NOT NULL,
+    event_date DATE NOT NULL,
+    notes TEXT,
+    color TEXT DEFAULT 'blue',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Task Attachments
@@ -69,5 +86,9 @@ CREATE TABLE IF NOT EXISTS task_attachments (
 
 -- Indexes for performance
 CREATE INDEX IF NOT EXISTS idx_projects_org_id ON projects(org_id);
+CREATE INDEX IF NOT EXISTS idx_projects_archived_at ON projects(archived_at);
 CREATE INDEX IF NOT EXISTS idx_tasks_project_id ON tasks(project_id);
+CREATE INDEX IF NOT EXISTS idx_tasks_updated_at ON tasks(updated_at);
+CREATE INDEX IF NOT EXISTS idx_dashboard_events_event_date ON dashboard_events(event_date);
+CREATE INDEX IF NOT EXISTS idx_dashboard_events_updated_at ON dashboard_events(updated_at);
 CREATE INDEX IF NOT EXISTS idx_task_attachments_task_id ON task_attachments(task_id);

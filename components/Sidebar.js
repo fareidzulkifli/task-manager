@@ -17,7 +17,8 @@ import {
   Sun,
   Moon,
   Monitor,
-  BookOpen
+  BookOpen,
+  MessageSquareText
 } from 'lucide-react'
 
 export default function Sidebar() {
@@ -168,6 +169,10 @@ export default function Sidebar() {
           <Link href="/gitnote" className={`sidebar-link ${pathname.startsWith('/gitnote') ? 'active' : ''}`} style={{ fontSize: '12px', fontWeight: '700', fontFamily: 'monospace', marginTop: '2px' }}>
             <BookOpen size={16} />
             <span>GitNotes</span>
+          </Link>
+          <Link href="/prompts" className={`sidebar-link ${pathname.startsWith('/prompts') ? 'active' : ''}`} style={{ fontSize: '12px', fontWeight: '700', fontFamily: 'monospace', marginTop: '2px' }}>
+            <MessageSquareText size={16} />
+            <span>Prompts</span>
           </Link>
         </div>
 
